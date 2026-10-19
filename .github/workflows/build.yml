@@ -2,7 +2,6 @@ name: Compilar y comprobar
 on:
   push:
     branches: [main, 'codex/**']
-    tags: ['v*']
   pull_request:
   workflow_dispatch:
 permissions:

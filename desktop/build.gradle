@@ -6,6 +6,10 @@ tasks.register('packageWindows', Exec) {
     onlyIf { System.getProperty('os.name').toLowerCase().contains('windows') }
     def jdk = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(17) }
     doFirst {
+        def buildRoot = layout.buildDirectory.get().asFile.canonicalFile.toPath()
+        def previousImage = layout.buildDirectory.dir('windows/FirmaVisible').get().asFile.canonicalFile
+        if (!previousImage.toPath().startsWith(buildRoot)) throw new GradleException('La salida de empaquetado está fuera de build/.')
+        project.delete(previousImage)
         commandLine jdk.get().metadata.installationPath.file('bin/jpackage.exe').asFile,
             '--type', 'app-image', '--name', 'FirmaVisible', '--app-version', project.version,
             '--input', layout.buildDirectory.dir('install/desktop/lib').get().asFile,

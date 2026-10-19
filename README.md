@@ -6,7 +6,9 @@ Aplicaciones locales para **Windows 10/11 x64** y **Android 8 o posterior** que 
 
 ## Descargar y utilizar
 
-En [Actions → Compilar y comprobar](https://github.com/eduardocvk/firmar_certificado/actions/workflows/build.yml), abre una ejecución que haya terminado correctamente. Sus artefactos contienen:
+La preversión publicada se descarga desde [Releases](https://github.com/eduardocvk/firmar_certificado/releases). Incluye el APK, el ZIP de Windows y sus sumas SHA-256. Solo se publica cuando las comprobaciones del mismo commit terminan correctamente.
+
+También puedes abrir una ejecución correcta en [Actions → Compilar y comprobar](https://github.com/eduardocvk/firmar_certificado/actions/workflows/build.yml). Sus artefactos contienen:
 
 | Artefacto | Uso |
 |---|---|
