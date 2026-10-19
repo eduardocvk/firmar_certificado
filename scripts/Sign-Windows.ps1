@@ -4,7 +4,7 @@ param(
     [string]$Directory
 )
 $ErrorActionPreference = 'Stop'
-if (-not $Directory) { $Directory = Join-Path (Split-Path -Parent $PSScriptRoot) 'artifacts/windows/FirmaVisible' }
+if (-not $Directory) { $Directory = Join-Path (Split-Path -Parent $PSScriptRoot) 'artifacts/windows/FirmaPDF' }
 $Thumbprint = $Thumbprint -replace '\s', ''
 if ($Thumbprint -notmatch '^[a-fA-F0-9]{40}$') { throw 'La huella debe ser SHA-1 del certificado, con 40 caracteres hexadecimales.' }
 $cert = Get-Item -LiteralPath "Cert:\CurrentUser\My\$Thumbprint" -ErrorAction Stop
@@ -24,8 +24,8 @@ else {
     $toolPath = Get-ChildItem -LiteralPath $sdk -Directory | Sort-Object Name -Descending | ForEach-Object { Join-Path $_.FullName 'x64/signtool.exe' } | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
     if (-not $toolPath) { throw 'Instala las herramientas de firma del Windows SDK.' }
 }
-$files = Get-ChildItem -LiteralPath $Directory -File | Where-Object { $_.Name -match '^FirmaVisible(?:\.Core)?\.(exe|dll)$' }
-if (-not $files) { throw 'No se encuentran los binarios de FirmaVisible.' }
+$files = Get-ChildItem -LiteralPath $Directory -File | Where-Object { $_.Name -match '^(?:FirmaPDF|FirmaVisible\.Core)\.(exe|dll)$' }
+if (-not $files) { throw 'No se encuentran los binarios de FirmaPDF.' }
 foreach ($file in $files) {
     & $toolPath sign /sha1 $Thumbprint /s My /fd SHA256 /tr $TimestampUrl.AbsoluteUri /td SHA256 $file.FullName
     if ($LASTEXITCODE -ne 0) { throw "No se pudo firmar $($file.Name)." }

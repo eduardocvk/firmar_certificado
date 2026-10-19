@@ -20,10 +20,10 @@ jobs:
           run_id=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/build.yml/runs?head_sha=$GITHUB_SHA&per_page=20" --jq '[.workflow_runs[] | select(.event == "push" and .head_branch == "main")][0].id')
           if [[ -z "$run_id" || "$run_id" == "null" ]]; then exit 1; fi
           gh run watch "$run_id" --exit-status --interval 30
-          gh run download "$run_id" --name FirmaVisible-Windows-NET --dir packages
+          gh run download "$run_id" --name FirmaPDF-Windows-NET --dir packages
           cd packages
-          sha256sum FirmaVisible-Windows-NET.zip > SHA256SUMS.txt
+          sha256sum FirmaPDF-Windows-NET.zip > SHA256SUMS.txt
       - name: Publicar preversión de Windows
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" packages/FirmaVisible-Windows-NET.zip packages/SHA256SUMS.txt --verify-tag --prerelease --title "FirmaVisible Windows .NET $GITHUB_REF_NAME" --notes-file windows/RELEASE.md
+        run: gh release create "$GITHUB_REF_NAME" packages/FirmaPDF-Windows-NET.zip packages/SHA256SUMS.txt --verify-tag --prerelease --title "FirmaPDF Windows .NET $GITHUB_REF_NAME" --notes-file windows/RELEASE.md

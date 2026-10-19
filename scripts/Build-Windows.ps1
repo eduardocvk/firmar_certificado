@@ -1,7 +1,7 @@
 param([string]$OutputDirectory)
 $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $PSScriptRoot
-if (-not $OutputDirectory) { $OutputDirectory = Join-Path $repoRoot 'artifacts/windows/FirmaVisible' }
+if (-not $OutputDirectory) { $OutputDirectory = Join-Path $repoRoot 'artifacts/windows/FirmaPDF' }
 $dotnet = Get-Command dotnet -ErrorAction SilentlyContinue
 if ($dotnet) { $dotnetPath = $dotnet.Source }
 else {
@@ -15,5 +15,5 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'No se pudo compilar la aplicación.' }
 } finally { Pop-Location }
 Copy-Item -LiteralPath (Join-Path $repoRoot 'windows/LEEME.txt') -Destination (Join-Path $OutputDirectory 'LEEME.txt') -Force
-Write-Output "Aplicación compilada localmente: $(Join-Path $OutputDirectory 'FirmaVisible.exe')"
+Write-Output "Aplicación compilada localmente: $(Join-Path $OutputDirectory 'FirmaPDF.exe')"
 Write-Output 'No se ha añadido una firma de editor ni modificado la seguridad de Windows.'

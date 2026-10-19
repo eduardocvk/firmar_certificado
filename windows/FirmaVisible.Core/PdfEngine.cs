@@ -73,12 +73,12 @@ public static class PdfEngine
                 double visualHeight = placement.Height * (rotated ? crop.GetWidth() : crop.GetHeight());
                 if (visualWidth < 100 || visualHeight < 42)
                     throw new ArgumentException("El recuadro debe medir al menos 100 × 42 puntos PDF. Amplíalo para que la firma sea legible.");
-                string fieldName = $"FirmaVisible_{Guid.NewGuid():N}";
+                string fieldName = $"FirmaPDF_{Guid.NewGuid():N}";
                 DateTime now = DateTime.Now;
                 signer.SetSignerProperties(new SignerProperties()
                     .SetFieldName(fieldName).SetPageNumber(placement.Page + 1)
                     .SetPageRect(placement.ToPdf(crop, page.GetRotation()))
-                    .SetClaimedSignDate(now).SetSignatureCreator("FirmaVisible .NET"));
+                    .SetClaimedSignDate(now).SetSignatureCreator("FirmaPDF .NET"));
                 var art = SignatureArt.Draw(doc, (float)visualWidth, (float)visualHeight, design, identity.Name,
                     identity.Certificate.GetNameInfo(System.Security.Cryptography.X509Certificates.X509NameType.SimpleName, true), new DateTimeOffset(now));
                 signer.GetSignatureField().SetSignatureAppearanceLayer(art);

@@ -11,6 +11,7 @@ public sealed record UserPreferences(SignatureDesign Design, bool UseTimestamp)
 public sealed class UserPreferencesStore
 {
     public string FilePath { get; }
+    // Keep the existing profile directory so rebranding to FirmaPDF preserves saved designs.
     public UserPreferencesStore() : this(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "FirmaVisible")) { }
     public UserPreferencesStore(string directory) => FilePath = Path.Combine(Path.GetFullPath(directory), "settings.json");
     private sealed record Data(string Template, bool Decorated, string? ImagePng, bool UseTimestamp, int Version = 1);

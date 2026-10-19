@@ -2,18 +2,18 @@ param(
     [Parameter(Mandatory)][string]$IdentityName,
     [Parameter(Mandatory)][string]$Publisher,
     [Parameter(Mandatory)][string]$PublisherDisplayName,
-    [string]$Version = '0.3.0.0',
+    [string]$Version = '0.3.1.0',
     [string]$PublishDirectory,
     [string]$OutputDirectory
 )
 $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $PSScriptRoot
-if (-not $PublishDirectory) { $PublishDirectory = Join-Path $repoRoot 'artifacts/windows/FirmaVisible' }
+if (-not $PublishDirectory) { $PublishDirectory = Join-Path $repoRoot 'artifacts/windows/FirmaPDF' }
 if (-not $OutputDirectory) { $OutputDirectory = Join-Path $repoRoot 'artifacts/store' }
 if ($IdentityName -notmatch '^[a-zA-Z0-9.-]{3,50}$') { throw 'Copia Package/Identity/Name de Partner Center.' }
 if ($Publisher -notmatch '^CN=') { throw 'Copia Package/Identity/Publisher completo de Partner Center.' }
 if ($Version -notmatch '^\d+\.\d+\.\d+\.\d+$') { throw 'La versión MSIX debe tener cuatro números.' }
-if (-not (Test-Path -LiteralPath (Join-Path $PublishDirectory 'FirmaVisible.exe'))) { throw 'Compila primero la aplicación con Build-Windows.ps1.' }
+if (-not (Test-Path -LiteralPath (Join-Path $PublishDirectory 'FirmaPDF.exe'))) { throw 'Compila primero la aplicación con Build-Windows.ps1.' }
 $tool = Get-Command makeappx.exe -ErrorAction SilentlyContinue
 if ($tool) { $toolPath = $tool.Source }
 else {
@@ -32,7 +32,7 @@ $manifest.Package.Identity.Publisher = $Publisher
 $manifest.Package.Identity.Version = $Version
 $manifest.Package.Properties.PublisherDisplayName = $PublisherDisplayName
 $manifest.Save((Join-Path $staging 'AppxManifest.xml'))
-$output = Join-Path $OutputDirectory "FirmaVisible-$Version.msix"
+$output = Join-Path $OutputDirectory "FirmaPDF-$Version.msix"
 & $toolPath pack /d $staging /p $output /o
 if ($LASTEXITCODE -ne 0) { throw 'No se pudo empaquetar o validar el MSIX.' }
 Write-Output "MSIX para enviar a Microsoft Store: $output"

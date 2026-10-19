@@ -1,5 +1,5 @@
 pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
-rootProject.name = 'FirmaVisible'
+rootProject.name = 'FirmaPDF'
 include 'core', 'pdf'
 if (providers.gradleProperty('withAndroid').orNull == 'true' || System.getenv('ANDROID_HOME') != null) {
     include 'android'

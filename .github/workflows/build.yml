@@ -33,18 +33,18 @@ jobs:
       - name: Comprobar arranque del ejecutable publicado
         shell: pwsh
         run: |
-          $app = Start-Process -FilePath (Resolve-Path artifacts/windows/FirmaVisible/FirmaVisible.exe) -ArgumentList '--smoke-test' -WindowStyle Hidden -PassThru -Wait
+          $app = Start-Process -FilePath (Resolve-Path artifacts/windows/FirmaPDF/FirmaPDF.exe) -ArgumentList '--smoke-test' -WindowStyle Hidden -PassThru -Wait
           if ($app.ExitCode -ne 0) { throw "Error de arranque: $($app.ExitCode)" }
       - name: Validar empaquetado para Store con identidad de prueba
         shell: pwsh
-        run: ./scripts/New-StorePackage.ps1 -IdentityName FirmaVisible.ValidationOnly -Publisher 'CN=ValidationOnly' -PublisherDisplayName 'Validation only'
+        run: ./scripts/New-StorePackage.ps1 -IdentityName FirmaPDF.ValidationOnly -Publisher 'CN=ValidationOnly' -PublisherDisplayName 'Validation only'
       - name: Comprimir aplicación
         shell: pwsh
-        run: Compress-Archive -Path artifacts/windows/FirmaVisible -DestinationPath FirmaVisible-Windows-NET.zip
+        run: Compress-Archive -Path artifacts/windows/FirmaPDF -DestinationPath FirmaPDF-Windows-NET.zip
       - uses: actions/upload-artifact@v4
         with:
-          name: FirmaVisible-Windows-NET
-          path: FirmaVisible-Windows-NET.zip
+          name: FirmaPDF-Windows-NET
+          path: FirmaPDF-Windows-NET.zip
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -75,7 +75,7 @@ jobs:
           ./scripts/verify-timestamp.ps1
       - uses: actions/upload-artifact@v4
         with:
-          name: FirmaVisible-Android-pruebas
+          name: FirmaPDF-Android-pruebas
           path: android/build/outputs/apk/debug/*.apk
       - uses: actions/upload-artifact@v4
         if: always()

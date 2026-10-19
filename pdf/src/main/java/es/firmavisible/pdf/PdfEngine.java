@@ -81,7 +81,7 @@ public final class PdfEngine {
                     }
                 }
                 if (field == null) throw new IOException("No se pudo crear el campo de firma.");
-                field.setPartialName("FirmaVisible_" + UUID.randomUUID().toString().replace("-", ""));
+                field.setPartialName("FirmaPDF_" + UUID.randomUUID().toString().replace("-", ""));
                 PDAnnotationWidget widget = field.getWidgets().get(0);
                 widget.setRectangle(new PDRectangle(rect[0], rect[1], rect[2], rect[3]));
                 widget.setPrinted(true);

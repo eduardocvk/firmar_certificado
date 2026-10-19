@@ -53,7 +53,7 @@ public final class MainActivity extends Activity {
         rootLayout=root;LinearLayout controls=new LinearLayout(this);controls.setOrientation(LinearLayout.VERTICAL);
         controlsPanel=new ScrollView(this){@Override protected void onMeasure(int width,int height){if(getResources().getConfiguration().orientation!=android.content.res.Configuration.ORIENTATION_LANDSCAPE){int available=rootLayout.getHeight()>0?rootLayout.getHeight():getResources().getDisplayMetrics().heightPixels;height=View.MeasureSpec.makeMeasureSpec(Math.round(available*.49f),View.MeasureSpec.AT_MOST);}super.onMeasure(width,height);}};controlsPanel.setVerticalScrollBarEnabled(false);controlsPanel.addView(controls);root.addView(controlsPanel);workspacePanel=new LinearLayout(this);workspacePanel.setOrientation(LinearLayout.VERTICAL);root.addView(workspacePanel);
         LinearLayout header=row();LinearLayout heading=new LinearLayout(this);heading.setOrientation(LinearLayout.VERTICAL);
-        TextView title=text("FirmaVisible",27);title.setTypeface(null,Typeface.BOLD);heading.addView(title);
+        TextView title=text("FirmaPDF",27);title.setTypeface(null,Typeface.BOLD);heading.addView(title);
         header.addView(heading,new LinearLayout.LayoutParams(0,-2,1));
         Button more=button("•••",this::moreMenu,false);more.setContentDescription("Guardar, compartir y comprobar firmas");header.addView(more,new LinearLayout.LayoutParams(dp(48),dp(48)));controls.addView(header);
         LinearLayout document=card();LinearLayout documentRow=row();
@@ -95,7 +95,7 @@ public final class MainActivity extends Activity {
             catch(Exception e){runOnUiThread(()->{if(isDestroyed())return;setBusy(false,"Operación no completada.");error(e.getMessage()==null?"No se pudo completar la operación.":e.getMessage());});}
         });
     }
-    private void error(String message){new AlertDialog.Builder(this).setTitle("FirmaVisible").setMessage(message).setPositiveButton("Aceptar",null).show();}
+    private void error(String message){new AlertDialog.Builder(this).setTitle("FirmaPDF").setMessage(message).setPositiveButton("Aceptar",null).show();}
     private void pick(int request,String mime){Intent intent=new Intent(Intent.ACTION_OPEN_DOCUMENT);intent.addCategory(Intent.CATEGORY_OPENABLE);intent.setType(mime);startActivityForResult(intent,request);}
     private Uri incoming(Intent intent){
         if(Intent.ACTION_SEND.equals(intent.getAction()))return intent.getParcelableExtra(Intent.EXTRA_STREAM);

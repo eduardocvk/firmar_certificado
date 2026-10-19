@@ -1,8 +1,10 @@
-# FirmaVisible
+# FirmaPDF
 
 Aplicaciones locales para **Windows 10/11 x64** y **Android 8 o posterior** que firman PDF con certificado digital y permiten elegir la posición de su apariencia visible.
 
-**Windows 0.3.0 en C#/.NET; Android 0.2.0. Versiones de pruebas.** Implementa firma con certificado y comprobación criptográfica, no una certificación jurídica del documento. El usuario confirmó que Android firma correctamente con su certificado en la versión anterior; las nuevas funciones y la versión Windows necesitan su comprobación manual con FNMT. Conviene empezar con un PDF de prueba y comprobar el resultado en Adobe Reader y en el sistema al que se enviará.
+**Windows 0.3.1 en C#/.NET; Android 0.2.1. Versiones de pruebas.** Implementa firma con certificado y comprobación criptográfica, no una certificación jurídica del documento. El usuario confirmó que Android firma correctamente con su certificado en la versión anterior; las nuevas funciones y la versión Windows necesitan su comprobación manual con FNMT. Conviene empezar con un PDF de prueba y comprobar el resultado en Adobe Reader y en el sistema al que se enviará.
+
+El nombre anterior era FirmaVisible. Se mantienen el identificador Android y la carpeta de preferencias Windows para conservar los diseños guardados. Los paquetes de versiones anteriores conservan sus nombres originales.
 
 ## Descargar y utilizar
 
@@ -12,8 +14,8 @@ También puedes abrir una ejecución correcta en [Actions → Compilar y comprob
 
 | Artefacto | Uso |
 |---|---|
-| `FirmaVisible-Windows-NET` | Extrae el ZIP y conserva toda la carpeta `FirmaVisible`; ejecuta `FirmaVisible.exe`. Incluye .NET, sin Java. No requiere permisos de administrador. |
-| `FirmaVisible-Android-pruebas` | Extrae el APK y ábrelo en Android. Si Android lo solicita, permite instalar aplicaciones desde la aplicación con la que hayas abierto el APK. |
+| `FirmaPDF-Windows-NET` | Extrae el ZIP y conserva toda la carpeta `FirmaPDF`; ejecuta `FirmaPDF.exe`. Incluye .NET, sin Java. No requiere permisos de administrador. |
+| `FirmaPDF-Android-pruebas` | Extrae el APK y ábrelo en Android. Si Android lo solicita, permite instalar aplicaciones desde la aplicación con la que hayas abierto el APK. |
 
 Los artefactos de Actions requieren iniciar sesión en GitHub y caducan según su política de conservación. El APK es una **compilación de depuración para pruebas**, firmada con una clave de desarrollo, distinta del certificado usado para firmar documentos. Entre compilaciones de CI puede ser necesario desinstalar la anterior para instalar la nueva. No es una distribución de producción ni está publicada en Google Play.
 
@@ -30,7 +32,7 @@ Los artefactos de Actions requieren iniciar sesión en GitHub y caducan según s
 
 ### Android
 
-1. Abre un PDF desde la aplicación, o utiliza **Compartir / Abrir con → FirmaVisible** desde otra aplicación.
+1. Abre un PDF desde la aplicación, o utiliza **Compartir / Abrir con → FirmaPDF** desde otra aplicación.
 2. En **Certificado**, elige una identidad del almacén de Android o abre tu `.p12/.pfx` con su contraseña. La importación directa solo dura la sesión; no guarda el certificado en disco. Si ya tienes instalado el certificado utilizado por AutoFirma, comprueba si aparece en el selector de Android. Si no aparece, puedes abrir tu copia `.p12/.pfx`.
 3. Pulsa **Personalizar firma** para guardar texto e imagen. Usa `{nombre}`, `{fecha}` y `{emisor}` para completarlos con el certificado elegido. Elige PNG/JPEG y fondo con marco o transparente. El diseño se conserva en este móvil.
 4. Activa **Sello de tiempo** para solicitar RFC3161 a DigiCert (requiere Internet); desactívalo para firmar sin conexión. Solo se envía una huella de la firma. Si el servicio falla, no se guarda una firma sin el sello solicitado.
@@ -40,7 +42,7 @@ Los artefactos de Actions requieren iniciar sesión en GitHub y caducan según s
 
 La previsualización de texto es orientativa; el recuadro se coloca en las coordenadas seleccionadas. El PDF final contiene nombre del certificado y fecha con zona horaria. El mínimo de recuadro es 100 × 42 puntos PDF. Android limita la apertura a 100 MiB y el certificado importado a 4 MiB. Windows y Android admiten imagen personalizada y texto de hasta 600 caracteres. La imagen se limita a 1200 píxeles de lado y se normaliza sin metadatos. Si el texto no cabe de forma legible, se pide ampliar el recuadro o acortarlo; no se trunca silenciosamente.
 
-Algunos visores móviles omiten campos de firma. FirmaVisible prepara una copia exclusivamente de visualización para mostrar sus apariencias sin cambiar el original firmado. Para revisar el archivo exportado y sus firmas, utiliza un visor que las soporte, como Adobe Reader.
+Algunos visores móviles omiten campos de firma. FirmaPDF prepara una copia exclusivamente de visualización para mostrar sus apariencias sin cambiar el original firmado. Para revisar el archivo exportado y sus firmas, utiliza un visor que las soporte, como Adobe Reader.
 
 ## Qué firma genera y qué comprueba
 
@@ -80,7 +82,7 @@ dotnet run --project windows/FirmaVisible.Tests -c Release -- artifacts/windows-
 .\scripts\verify-openssl.ps1
 ```
 
-En Linux/macOS utiliza `bash ./gradlew`. Android no se incluye en Gradle hasta pasar `-PwithAndroid=true`. Windows se compila con .NET de forma independiente. Resultados: `artifacts/windows/FirmaVisible/` y `android/build/outputs/apk/debug/android-debug.apk`.
+En Linux/macOS utiliza `bash ./gradlew`. Android no se incluye en Gradle hasta pasar `-PwithAndroid=true`. Windows se compila con .NET de forma independiente. Resultados: `artifacts/windows/FirmaPDF/` y `android/build/outputs/apk/debug/android-debug.apk`.
 
 El flujo de CI compila Windows y Android, ejecuta las pruebas del motor, verifica CMS con OpenSSL y prueba la firma y su apariencia con el renderizador nativo en un emulador Android. Una compilación correcta no sustituye la prueba de extremo a extremo con FNMT, Adobe y el destinatario real.
 

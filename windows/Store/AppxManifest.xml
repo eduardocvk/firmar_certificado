@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities" IgnorableNamespaces="uap rescap">
-  <Identity Name="FirmaVisible.StoreIdentityPending" Publisher="CN=StoreIdentityPending" Version="0.3.0.0" ProcessorArchitecture="x64"/>
-  <Properties><DisplayName>FirmaVisible</DisplayName><PublisherDisplayName>Pendiente de Partner Center</PublisherDisplayName><Logo>Assets/StoreLogo.png</Logo></Properties>
+  <Identity Name="FirmaPDF.StoreIdentityPending" Publisher="CN=StoreIdentityPending" Version="0.3.1.0" ProcessorArchitecture="x64"/>
+  <Properties><DisplayName>FirmaPDF</DisplayName><PublisherDisplayName>Pendiente de Partner Center</PublisherDisplayName><Logo>Assets/StoreLogo.png</Logo></Properties>
   <Dependencies><TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.19041.0" MaxVersionTested="10.0.26100.0"/></Dependencies>
   <Resources><Resource Language="es-ES"/></Resources>
   <Applications>
-    <Application Id="FirmaVisible" Executable="App\FirmaVisible.exe" EntryPoint="Windows.FullTrustApplication">
-      <uap:VisualElements DisplayName="FirmaVisible" Description="Firma local de PDF con certificado digital y apariencia visible" BackgroundColor="#173B69" Square150x150Logo="Assets/Square150x150Logo.png" Square44x44Logo="Assets/Square44x44Logo.png"/>
+    <Application Id="FirmaPDF" Executable="App\FirmaPDF.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements DisplayName="FirmaPDF" Description="Firma local de PDF con certificado digital y apariencia visible" BackgroundColor="#173B69" Square150x150Logo="Assets/Square150x150Logo.png" Square44x44Logo="Assets/Square44x44Logo.png"/>
     </Application>
   </Applications>
   <Capabilities><rescap:Capability Name="runFullTrust"/></Capabilities>

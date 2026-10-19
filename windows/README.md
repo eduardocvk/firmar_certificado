@@ -1,4 +1,4 @@
-# FirmaVisible para Windows — C#/.NET y WPF
+# FirmaPDF para Windows — C#/.NET y WPF
 
 Versión 0.3. Motor e interfaz completamente .NET: no se ejecuta Java ni se invoca el antiguo firmador Java desde un proceso auxiliar. Visor `Windows.Data.Pdf`, claves del usuario mediante las APIs criptográficas de .NET e iText Community 9.8 para firma incremental de PDF.
 
@@ -12,7 +12,7 @@ dotnet run --project windows/FirmaVisible.Tests/FirmaVisible.Tests.csproj -c Rel
 .\scripts\Build-Windows.ps1
 ```
 
-Ejecutable local: `artifacts/windows/FirmaVisible/FirmaVisible.exe`. La carpeta contiene el runtime .NET y todas las dependencias. No requiere instalación de Java ni de .NET en el equipo de destino. Conservar toda la carpeta. Los archivos `packages.lock.json` fijan las dependencias; el script de publicación usa restauración bloqueada.
+Ejecutable local: `artifacts/windows/FirmaPDF/FirmaPDF.exe`. La carpeta contiene el runtime .NET y todas las dependencias. No requiere instalación de Java ni de .NET en el equipo de destino. Conservar toda la carpeta. Los archivos `packages.lock.json` fijan las dependencias; el script de publicación usa restauración bloqueada.
 
 La suite usa identidades efímeras autofirmadas «NO REAL», comprueba RSA y EC, CMS con `SignedCms` de .NET, las cuatro rotaciones con CropBox desplazado, original intacto, segunda firma incremental, certificado caducado, contraseña incorrecta, alteración y revisiones posteriores. El visor nativo de Windows renderiza cada resultado y se comprueba la ubicación visible. También genera una captura de la interfaz WPF sin abrir una ventana interactiva.
 

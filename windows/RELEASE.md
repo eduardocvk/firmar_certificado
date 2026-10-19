@@ -1,3 +1,5 @@
+FirmaPDF Windows 0.3.1: nuevo nombre, con los diseños guardados de FirmaVisible conservados.
+
 Windows 0.3 en C#/.NET y WPF: diseño renovado, apariencia personalizada y sello de tiempo.
 
 - Abrir PDF y elegir certificado del almacén de Windows o archivo `.p12/.pfx`.
@@ -7,7 +9,7 @@ Windows 0.3 en C#/.NET y WPF: diseño renovado, apariencia personalizada y sello
 - Hora acreditada en la confirmación final y en el panel de firmas del visor. La fecha impresa sigue siendo la del ordenador.
 - Vista previa, zoom/ajuste, colocar/mover/redimensionar firma, conservación de firmas anteriores y botón para abrir la última copia.
 
-Descarga y extrae `FirmaVisible-Windows-NET.zip`. Conserva toda la carpeta y abre `FirmaVisible.exe`. Incluye .NET y no necesita Java. Para desarrollo local: `scripts/Build-Windows.ps1`.
+Descarga y extrae `FirmaPDF-Windows-NET.zip`. Conserva toda la carpeta y abre `FirmaPDF.exe`. Incluye .NET y no necesita Java. Para desarrollo local: `scripts/Build-Windows.ps1`.
 
 **Esta descarga sigue sin firma Authenticode de editor. SmartScreen puede bloquearla.** La vía preparada para distribución desde Microsoft Store sigue pendiente de cuenta verificada y aprobación. No se desactiva SmartScreen ni se instalan certificados de confianza. [Pasos de distribución](https://github.com/eduardocvk/firmar_certificado/blob/main/windows/DISTRIBUCION.md).
 

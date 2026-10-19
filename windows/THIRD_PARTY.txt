@@ -1,4 +1,4 @@
-FirmaVisible Windows 0.3
+FirmaPDF Windows 0.3
 Código fuente: https://github.com/eduardocvk/firmar_certificado/tree/main/windows
 Licencia de la aplicación Windows: AGPL-3.0-or-later. Sin garantía.
 

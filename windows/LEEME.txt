@@ -1,6 +1,6 @@
-FirmaVisible para Windows 0.3 - C#/.NET y WPF
+FirmaPDF para Windows 0.3 - C#/.NET y WPF
 
-Conserva toda esta carpeta y ejecuta FirmaVisible.exe. No necesita Java ni instalar .NET.
+Conserva toda esta carpeta y ejecuta FirmaPDF.exe. No necesita Java ni instalar .NET.
 La descarga de GitHub no tiene firma de editor y SmartScreen puede bloquearla.
 Cambiar de Java a C# no elimina ese aviso. No se modifica la seguridad de Windows.
 La distribución MSIX desde Microsoft Store está preparada, pendiente de identidad y aprobación.

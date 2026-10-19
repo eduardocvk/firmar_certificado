@@ -28,7 +28,7 @@ Fuentes: [opciones de firma de Microsoft](https://learn.microsoft.com/en-us/wind
 
 ## Probar en tu ordenador mediante compilación local
 
-Para desarrollar y probar no es necesario descargar el EXE de GitHub: este repositorio permite compilar desde su código. En el ordenador en el que se está desarrollando ya se ha generado una copia local en `artifacts/windows/FirmaVisible/FirmaVisible.exe`.
+Para desarrollar y probar no es necesario descargar el EXE de GitHub: este repositorio permite compilar desde su código. En el ordenador en el que se está desarrollando ya se ha generado una copia local en `artifacts/windows/FirmaPDF/FirmaPDF.exe`.
 
 En otro equipo: instala el [SDK .NET 10 oficial](https://dotnet.microsoft.com/download/dotnet/10.0), obtiene el código del repositorio con Git y ejecuta `scripts/Build-Windows.ps1`. Conserva toda la carpeta de salida al ejecutar la app. Incluye .NET y no necesita Java.
 

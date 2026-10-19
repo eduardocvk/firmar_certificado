@@ -3,10 +3,10 @@
     <Nullable>enable</Nullable>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Version>0.3.0</Version>
-    <Authors>FirmaVisible</Authors>
-    <Company>FirmaVisible</Company>
-    <Copyright>Copyright © 2026 FirmaVisible contributors</Copyright>
+    <Version>0.3.1</Version>
+    <Authors>FirmaPDF</Authors>
+    <Company>FirmaPDF</Company>
+    <Copyright>Copyright © 2026 FirmaPDF contributors</Copyright>
     <RepositoryUrl>https://github.com/eduardocvk/firmar_certificado</RepositoryUrl>
     <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>

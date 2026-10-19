@@ -12,7 +12,7 @@ namespace FirmaVisible.App;
 
 public partial class MainWindow : Window
 {
-    private readonly string session = Path.Combine(Path.GetTempPath(), "FirmaVisible", Guid.NewGuid().ToString("N"));
+    private readonly string session = Path.Combine(Path.GetTempPath(), "FirmaPDF", Guid.NewGuid().ToString("N"));
     private readonly List<CertificateIdentity> identities = [];
     private string? input, displayInput, originalPath;
     private int page, pages;
@@ -43,7 +43,7 @@ public partial class MainWindow : Window
         if (busy) return;
         busy = true; Sidebar.IsEnabled = NavigationPanel.IsEnabled = PageSurface.IsEnabled = false; WorkingProgress.Visibility = Visibility.Visible; StatusLabel.Text = message;
         try { await work(); }
-        catch (Exception ex) { StatusLabel.Text = "Operación no completada."; MessageBox.Show(this, ex.Message, "FirmaVisible", MessageBoxButton.OK, MessageBoxImage.Error); }
+        catch (Exception ex) { StatusLabel.Text = "Operación no completada."; MessageBox.Show(this, ex.Message, "FirmaPDF", MessageBoxButton.OK, MessageBoxImage.Error); }
         finally { busy = false; Sidebar.IsEnabled = NavigationPanel.IsEnabled = PageSurface.IsEnabled = true; WorkingProgress.Visibility = Visibility.Collapsed; }
     }
 
@@ -177,7 +177,7 @@ public partial class MainWindow : Window
     }
     private void AboutClick(object sender, RoutedEventArgs e)
     {
-        if (MessageBox.Show(this, "FirmaVisible 0.3 · C#/.NET y WPF\n\nMotor PDF: iText Community, Copyright Apryse Group NV.\nEsta aplicación Windows se distribuye bajo AGPL-3.0-or-later, sin garantía.\nFuente Noto Sans: SIL Open Font License 1.1.\n\nEl código fuente y las instrucciones completas están disponibles en GitHub. ¿Abrirlos?", "Código fuente y licencias", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+        if (MessageBox.Show(this, "FirmaPDF 0.3.1 · C#/.NET y WPF\n\nMotor PDF: iText Community, Copyright Apryse Group NV.\nEsta aplicación Windows se distribuye bajo AGPL-3.0-or-later, sin garantía.\nFuente Noto Sans: SIL Open Font License 1.1.\n\nEl código fuente y las instrucciones completas están disponibles en GitHub. ¿Abrirlos?", "Código fuente y licencias", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
             Process.Start(new ProcessStartInfo("https://github.com/eduardocvk/firmar_certificado/tree/main/windows") { UseShellExecute = true });
     }
 

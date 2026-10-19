@@ -1,3 +1,5 @@
+FirmaPDF Android 0.2.1: nuevo nombre en el lanzador y la interfaz; se mantiene el identificador de la aplicación y sus preferencias.
+
 Android 0.2: diseño renovado, firma visible personalizada y sello de tiempo.
 
 - Interfaz con tarjetas, vista del PDF y adaptación a vertical/horizontal.

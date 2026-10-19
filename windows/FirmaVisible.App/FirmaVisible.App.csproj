@@ -3,7 +3,9 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     <UseWPF>true</UseWPF>
-    <AssemblyName>FirmaVisible</AssemblyName>
+    <AssemblyName>FirmaPDF</AssemblyName>
+    <RootNamespace>FirmaVisible.App</RootNamespace>
+    <Product>FirmaPDF</Product>
     <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <ApplicationManifest>app.manifest</ApplicationManifest>

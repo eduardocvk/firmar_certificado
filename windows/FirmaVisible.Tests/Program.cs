@@ -150,7 +150,7 @@ internal static class Program
         byte[] changed = File.ReadAllBytes(altered);
         byte[] marker = System.Text.Encoding.ASCII.GetBytes("TEST");
         int offset = changed.AsSpan().IndexOf(marker);
-        if(offset < 0) offset = changed.AsSpan().IndexOf(System.Text.Encoding.ASCII.GetBytes("FirmaVisible"));
+        if(offset < 0) offset = changed.AsSpan().IndexOf(System.Text.Encoding.ASCII.GetBytes("FirmaPDF"));
         Check(offset > 0,"No se encontró contenido para la prueba de alteración."); changed[offset] ^= 1; File.WriteAllBytes(altered,changed);
         Refuses(() => PdfEngine.Verify(altered), "No se detectó una alteración.");
 
