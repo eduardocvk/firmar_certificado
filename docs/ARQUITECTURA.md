@@ -2,11 +2,11 @@
 
 ## Firma local y aplicaciones nativas
 
-Windows usa Swing y Java 17; Android usa APIs Java nativas, minSdk 26. Comparten la construcción CMS, las comprobaciones del certificado y las coordenadas del recuadro. La clave del almacén de Windows o Android se utiliza mediante su interfaz de firma; no se exporta. La importación PKCS#12 utiliza una instancia explícita del proveedor Bouncy Castle, sin sustituir globalmente proveedores del sistema Android.
+Windows usa C#/.NET 10, WPF e iText Community; Android usa APIs Java nativas, minSdk 26. Son motores independientes con pruebas equivalentes de CMS, integridad y geometría. Windows utiliza Windows.Data.Pdf para renderizar y System.Security.Cryptography para acceder a las claves. El módulo Windows se distribuye bajo AGPL-3.0-or-later por el uso de iText Community. La clave del almacén de Windows o Android se utiliza mediante su interfaz de firma; no se exporta. La importación PKCS#12 utiliza una instancia explícita del proveedor Bouncy Castle, sin sustituir globalmente proveedores del sistema Android.
 
 Se descarta un backend custodio de certificados en esta versión. La app no pide permiso de Internet en Android. El usuario autoriza cada firma desde una confirmación, además de los diálogos que requiera el proveedor de claves.
 
-## PDFBox en las dos plataformas
+## PDFBox en Android y pruebas JVM
 
 JVM usa Apache PDFBox 2.0.36. Android usa `com.tom-roush:pdfbox-android:2.0.27.0`, port basado en una versión anterior de PDFBox. La tarea `generatePdfEngine` cambia únicamente imports `org.apache.pdfbox` → `com.tom_roush.pdfbox`, de modo que el algoritmo permanece en una fuente. El renderizado de Android usa `android.graphics.pdf.PdfRenderer`.
 
@@ -28,11 +28,11 @@ El port Android retorna de `addSignature` antes de registrar la anotación en la
 8. Volver a abrir, verificar todas las firmas CMS y confirmar que la última cubre hasta EOF.
 9. Mover al destino sin reemplazar un archivo existente. En Android, exportar la copia verificada con Storage Access Framework o compartir por FileProvider de solo lectura.
 
-La apariencia tiene un BBox en coordenadas visuales y una matriz que compensa la rotación de página. Las pruebas renderizan el resultado con CropBox de origen distinto de cero para evitar errores que quedan ocultos en PDF A4 simples.
+En Android la apariencia tiene un BBox en coordenadas visuales y una matriz que compensa la rotación de página; Windows delega la apariencia en iText con las coordenadas transformadas. Las pruebas renderizan el resultado con CropBox de origen distinto de cero para evitar errores que quedan ocultos en PDF A4 simples.
 
 ## Distribución
 
-Windows: `jpackage --type app-image`, runtime incluido. Android: APK debug para pruebas. Para actualizaciones de producción se necesitará una clave de firma estable, respaldada fuera del repositorio y custodiada por el propietario. Esa clave firma la **aplicación** y es distinta del certificado FNMT que firma los **PDF**.
+Windows: publicación .NET autocontenida, sin Java. La descarga ZIP no está firmada y puede ser bloqueada por SmartScreen. Se prepara MSIX para Microsoft Store, pendiente de identidad y aprobación; véase [distribución](../windows/DISTRIBUCION.md). Android: APK debug para pruebas. Para actualizaciones de producción se necesitará una clave de firma estable, respaldada fuera del repositorio y custodiada por el propietario. Esa clave firma la **aplicación** y es distinta del certificado FNMT que firma los **PDF**.
 
 ## Evolución a B-T y LT
 

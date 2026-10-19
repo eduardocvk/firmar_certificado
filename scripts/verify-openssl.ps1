@@ -1,6 +1,7 @@
+param([string]$Artifacts)
 $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $PSScriptRoot
-$artifactRoot = Join-Path $repoRoot 'pdf/build/test-artifacts'
+$artifactRoot = if ($Artifacts) { (Resolve-Path -LiteralPath $Artifacts).Path } else { Join-Path $repoRoot 'pdf/build/test-artifacts' }
 $openssl = Get-Command openssl -ErrorAction SilentlyContinue
 if (-not $openssl) {
     $gitOpenSSL = 'C:\Program Files\Git\mingw64\bin\openssl.exe'

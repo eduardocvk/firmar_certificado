@@ -14,29 +14,38 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-dotnet@v4
         with:
-          distribution: temurin
-          java-version: '17'
-      - uses: gradle/actions/setup-gradle@v4
-      - name: Pruebas y aplicación portable con Java incluido
+          dotnet-version: '10.0.x'
+      - name: Pruebas C#, CMS y visor nativo de Windows
         shell: pwsh
-        run: ./gradlew.bat :pdf:test :desktop:packageWindows --no-daemon
+        run: dotnet run --project windows/FirmaVisible.Tests/FirmaVisible.Tests.csproj -c Release -- artifacts/windows-tests
       - name: Verificación CMS independiente con OpenSSL
         shell: pwsh
-        run: ./scripts/verify-openssl.ps1
+        run: ./scripts/verify-openssl.ps1 -Artifacts artifacts/windows-tests
+      - name: Publicar aplicación con .NET incluido
+        shell: pwsh
+        run: ./scripts/Build-Windows.ps1
+      - name: Comprobar arranque del ejecutable publicado
+        shell: pwsh
+        run: |
+          $app = Start-Process -FilePath (Resolve-Path artifacts/windows/FirmaVisible/FirmaVisible.exe) -ArgumentList '--smoke-test' -WindowStyle Hidden -PassThru -Wait
+          if ($app.ExitCode -ne 0) { throw "Error de arranque: $($app.ExitCode)" }
+      - name: Validar empaquetado para Store con identidad de prueba
+        shell: pwsh
+        run: ./scripts/New-StorePackage.ps1 -IdentityName FirmaVisible.ValidationOnly -Publisher 'CN=ValidationOnly' -PublisherDisplayName 'Validation only'
       - name: Comprimir aplicación
         shell: pwsh
-        run: Compress-Archive -Path desktop/build/windows/FirmaVisible -DestinationPath FirmaVisible-Windows.zip
+        run: Compress-Archive -Path artifacts/windows/FirmaVisible -DestinationPath FirmaVisible-Windows-NET.zip
       - uses: actions/upload-artifact@v4
         with:
-          name: FirmaVisible-Windows
-          path: FirmaVisible-Windows.zip
+          name: FirmaVisible-Windows-NET
+          path: FirmaVisible-Windows-NET.zip
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: pruebas-windows
-          path: pdf/build/reports/tests/
+          path: artifacts/windows-tests/
   android:
     runs-on: ubuntu-latest
     steps:
@@ -52,7 +61,7 @@ jobs:
           log-accepted-android-sdk-licenses: false
       - uses: gradle/actions/setup-gradle@v4
       - name: Compilar APK y análisis estático
-        run: bash ./gradlew -PwithAndroid=true :android:assembleDebug :android:assembleAndroidTest :android:lintDebug --no-daemon
+        run: bash ./gradlew -PwithAndroid=true :pdf:test :android:assembleDebug :android:assembleAndroidTest :android:lintDebug --no-daemon
       - uses: actions/upload-artifact@v4
         with:
           name: FirmaVisible-Android-pruebas

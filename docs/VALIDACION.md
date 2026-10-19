@@ -2,6 +2,8 @@
 
 Las identidades de las pruebas se generan al ejecutarlas, son autofirmadas y dicen expresamente «NO REAL». No contienen datos ni claves de una persona real. Que pasen las pruebas no acredita confianza de una autoridad certificadora.
 
+Windows ejecuta 49 comprobaciones en C# con iText, verificación independiente de CMS mediante .NET SignedCms y OpenSSL, y renderizado nativo Windows.Data.Pdf. También comprueba la construcción de la ventana WPF. Los artefactos están en `artifacts/windows-tests`. El CI valida el MSIX con una identidad ficticia; no acredita publicación ni firma de editor.
+
 ## Pruebas automatizadas
 
 | Prueba | Qué demuestra |
@@ -10,7 +12,7 @@ Las identidades de las pruebas se generan al ejecutarlas, son autofirmadas y dic
 | PKCS#12 y contraseña incorrecta | Importación con clave privada; rechazo de contraseña errónea. |
 | Certificado caducado | Rechazo antes de producir un resultado. |
 | Rotaciones y CropBox | Recuadro en la posición visual elegida con 0, 90, 180 y 270 grados. |
-| Atributos CMS | `SigningCertificateV2` presente, sin `signingTime` en CMS. |
+| Atributos CMS | `SigningCertificateV2` presente; el motor Android omite `signingTime` en CMS. |
 | Segunda firma | Conservación del prefijo original y verificación de ambas firmas. |
 | Alteración de datos | Rechazo criptográfico de un PDF alterado. |
 | Bytes posteriores a firma | Se informa de revisión posterior; no se vuelve a firmar automáticamente. |

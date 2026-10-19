@@ -1,0 +1,21 @@
+FirmaVisible Windows 0.2 — C#/.NET y WPF
+
+Ejecutar FirmaVisible.exe conservando toda la carpeta. Incluye .NET; no requiere Java.
+Seleccionar un PDF y un certificado de Windows o archivo .p12/.pfx, colocar el recuadro y guardar una copia.
+
+ESTADO DE DISTRIBUCIÓN
+Esta preversión descargada de GitHub NO tiene firma de editor Authenticode.
+Windows puede mostrar «Editor desconocido» y bloquearla. Cambiar a C# no elimina ese control.
+No se han modificado certificados de confianza, SmartScreen ni políticas del equipo.
+
+Para probar como desarrollo local: compilar el código fuente con el SDK .NET 10 y scripts/Build-Windows.ps1.
+La compilación local no garantiza autorización si el equipo aplica políticas de control de aplicaciones.
+Para distribución sin el aviso de descarga: se ha preparado el empaquetado MSIX para Microsoft Store.
+Requiere una cuenta verificada y la aprobación de Microsoft. El MSIX previo a la Store no es directamente instalable.
+
+Fuente y guía de distribución: https://github.com/eduardocvk/firmar_certificado/tree/main/windows
+
+Los PDF se firman localmente. Sin sello de tiempo, sin comprobación de confianza o revocación y sin evidencias LT.
+Comprueba primero un PDF de prueba con tu FNMT en Adobe Reader y en el destinatario previsto.
+
+Licencia de esta aplicación Windows: AGPL-3.0-or-later. Consulta LICENSE.txt, ITEXT-LICENSE.md y THIRD_PARTY.txt.

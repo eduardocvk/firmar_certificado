@@ -1,0 +1,183 @@
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using System.Runtime.InteropServices;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using Microsoft.Win32;
+using FirmaVisible.Core;
+
+namespace FirmaVisible.App;
+
+public partial class MainWindow : Window
+{
+    private readonly string session = Path.Combine(Path.GetTempPath(), "FirmaVisible", Guid.NewGuid().ToString("N"));
+    private readonly List<CertificateIdentity> identities = [];
+    private string? input, displayInput, originalPath;
+    private int page, pages;
+    private bool busy;
+    private double[]? box, before;
+    private Point start;
+    private int dragMode;
+    private double baseWidth = 800;
+
+    public MainWindow() { InitializeComponent(); Directory.CreateDirectory(session); }
+    private CertificateIdentity? Identity => CertificateCombo.SelectedItem as CertificateIdentity;
+
+    private async Task WorkAsync(string message, Func<Task> work)
+    {
+        if (busy) return;
+        busy = true; ActionsPanel.IsEnabled = NavigationPanel.IsEnabled = PageSurface.IsEnabled = false; StatusLabel.Text = message;
+        try { await work(); }
+        catch (Exception ex) { StatusLabel.Text = "Operación no completada."; MessageBox.Show(this, ex.Message, "FirmaVisible", MessageBoxButton.OK, MessageBoxImage.Error); }
+        finally { busy = false; ActionsPanel.IsEnabled = NavigationPanel.IsEnabled = PageSurface.IsEnabled = true; }
+    }
+
+    private async void OpenPdfClick(object sender, RoutedEventArgs e)
+    {
+        var picker = new OpenFileDialog { Filter = "Documento PDF|*.pdf", Title = "Abrir PDF" };
+        if (picker.ShowDialog(this) != true) return;
+        await WorkAsync("Abriendo documento…", async () =>
+        {
+            string copy = Path.Combine(session, $"original-{Guid.NewGuid():N}.pdf");
+            string preview;
+            try
+            {
+                preview = await Task.Run(() => { File.Copy(picker.FileName, copy); return PdfEngine.PreparePreview(copy, session); });
+                var rendered = await PdfPreview.RenderAsync(preview, 0);
+                DeleteDocumentCopies(); input = copy; displayInput = preview; originalPath = picker.FileName; page = 0;
+                DocumentLabel.Text = Path.GetFileName(originalPath); ShowPage(rendered);
+            }
+            catch { if (File.Exists(copy)) File.Delete(copy); throw; }
+        });
+    }
+
+    private void ShowPage(RenderedPage rendered)
+    {
+        PageImage.Source = rendered.Image; pages = rendered.Count; box = null;
+        PageSurface.Visibility = Visibility.Visible;
+        baseWidth = Math.Max(400, Math.Min(850, Viewport.ActualWidth - 48));
+        UpdateZoom(); DrawBox(); Viewport.ScrollToTop(); Viewport.ScrollToLeftEnd();
+        PageLabel.Text = $"Página {page + 1} de {pages}";
+        StatusLabel.Text = "Dibuja el recuadro donde quieres firmar. Vista previa orientativa del texto.";
+    }
+
+    private async Task NavigateAsync(int index)
+    {
+        if (displayInput is null || index < 0 || index >= pages) return;
+        await WorkAsync("Preparando página…", async () => { var result = await PdfPreview.RenderAsync(displayInput, index); page = index; ShowPage(result); });
+    }
+    private async void PreviousClick(object sender, RoutedEventArgs e) => await NavigateAsync(page - 1);
+    private async void NextClick(object sender, RoutedEventArgs e) => await NavigateAsync(page + 1);
+
+    private void SetIdentities(IEnumerable<CertificateIdentity> values)
+    {
+        ForgetIdentities(); identities.AddRange(values); CertificateCombo.ItemsSource = identities.ToArray(); CertificateCombo.SelectedIndex = identities.Count == 0 ? -1 : 0;
+    }
+    private async void StoreClick(object sender, RoutedEventArgs e) => await WorkAsync("Leyendo certificados de Windows…", async () =>
+    {
+        var values = await Task.Run(CertificateIdentity.FromWindowsStore); SetIdentities(values); StatusLabel.Text = "Selecciona la identidad que quieres utilizar.";
+    });
+
+    private async void ImportClick(object sender, RoutedEventArgs e)
+    {
+        var picker = new OpenFileDialog { Filter = "Certificado con clave privada|*.p12;*.pfx", Title = "Abrir certificado" };
+        if (picker.ShowDialog(this) != true) return;
+        var password = new PasswordBox { Margin = new Thickness(20, 12, 20, 8), MinWidth = 300 };
+        var ok = new Button { Content = "Abrir", IsDefault = true, Margin = new Thickness(20, 8, 20, 16) };
+        var content = new StackPanel(); content.Children.Add(new TextBlock { Text = "Contraseña del certificado · solo esta sesión", Margin = new Thickness(20, 16, 20, 0) }); content.Children.Add(password); content.Children.Add(ok);
+        var dialog = new Window { Owner = this, Title = "Abrir .p12 / .pfx", Content = content, SizeToContent = SizeToContent.WidthAndHeight, ResizeMode = ResizeMode.NoResize, WindowStartupLocation = WindowStartupLocation.CenterOwner };
+        ok.Click += (_, _) => dialog.DialogResult = true;
+        if (dialog.ShowDialog() != true) { password.Clear(); return; }
+        using var secure = password.SecurePassword;
+        char[] chars = new char[secure.Length]; IntPtr pointer = Marshal.SecureStringToGlobalAllocUnicode(secure);
+        try { Marshal.Copy(pointer, chars, 0, chars.Length); } finally { Marshal.ZeroFreeGlobalAllocUnicode(pointer); password.Clear(); }
+        await WorkAsync("Abriendo certificado…", async () =>
+        {
+            try { var values = await Task.Run(() => CertificateIdentity.FromPkcs12(picker.FileName, chars)); SetIdentities(values); StatusLabel.Text = "Certificado abierto para esta sesión."; }
+            finally { Array.Clear(chars); }
+        });
+    }
+
+    private void IdentityClick(object sender, RoutedEventArgs e) { if (Identity is { } identity) MessageBox.Show(this, identity.Details, "Identidad seleccionada"); }
+    private void CertificateChanged(object sender, SelectionChangedEventArgs e) { if (SignerPreview is not null) SignerPreview.Text = Identity?.Name ?? "Selecciona un certificado"; }
+    private void ForgetClick(object sender, RoutedEventArgs e) => ForgetIdentities();
+    private void ForgetIdentities() { CertificateCombo.ItemsSource = null; foreach (var identity in identities) identity.Dispose(); identities.Clear(); }
+
+    private async void SignClick(object sender, RoutedEventArgs e)
+    {
+        if (input is null || box is null || Identity is not { } identity) { MessageBox.Show(this, "Abre un PDF, elige un certificado y dibuja el recuadro."); return; }
+        Placement placement;
+        try { placement = new(page, box[0], box[1], box[2], box[3]); } catch (ArgumentException ex) { MessageBox.Show(this, ex.Message); return; }
+        var picker = new SaveFileDialog { Filter = "Documento PDF|*.pdf", DefaultExt = ".pdf", AddExtension = true, Title = "Guardar copia firmada", FileName = Path.GetFileNameWithoutExtension(originalPath) + "_firmado.pdf", InitialDirectory = Path.GetDirectoryName(originalPath), OverwritePrompt = false };
+        if (picker.ShowDialog(this) != true) return;
+        if (File.Exists(picker.FileName)) { MessageBox.Show(this, "Ese archivo ya existe. Elige un nombre nuevo para conservarlo."); return; }
+        if (MessageBox.Show(this, $"Vas a firmar el PDF con:\n\n{identity.Details}\n\nSe creará una copia. La fecha procede del dispositivo; no es un sello de tiempo.", "Autorizar firma", MessageBoxButton.OKCancel, MessageBoxImage.Information) != MessageBoxResult.OK) return;
+        string source = input;
+        await WorkAsync("Firmando y comprobando integridad…", async () =>
+        {
+            await Task.Run(() => PdfEngine.Sign(source, picker.FileName, placement, identity));
+            StatusLabel.Text = $"Copia firmada: {picker.FileName}";
+            MessageBox.Show(this, $"Guardado en:\n{picker.FileName}\n\n{PdfEngine.VerificationNotice}", "PDF firmado", MessageBoxButton.OK, MessageBoxImage.Information);
+        });
+    }
+
+    private async void VerifyClick(object sender, RoutedEventArgs e)
+    {
+        if (input is null) return;
+        await WorkAsync("Comprobando firmas…", async () => { var result = await Task.Run(() => PdfEngine.Verify(input)); StatusLabel.Text = "Comprobación terminada."; MessageBox.Show(this, result.ToString(), "Integridad de las firmas"); });
+    }
+    private void ResetBoxClick(object sender, RoutedEventArgs e) { if (input is not null) { box = [.1, .72, .55, .14]; DrawBox(); } }
+    private void AboutClick(object sender, RoutedEventArgs e)
+    {
+        if (MessageBox.Show(this, "FirmaVisible 0.2 · C#/.NET y WPF\n\nMotor PDF: iText Community, Copyright Apryse Group NV.\nEsta aplicación Windows se distribuye bajo AGPL-3.0-or-later, sin garantía.\n\nEl código fuente y las instrucciones completas están disponibles en GitHub. ¿Abrirlos?", "Código fuente y licencias", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            Process.Start(new ProcessStartInfo("https://github.com/eduardocvk/firmar_certificado/tree/main/windows") { UseShellExecute = true });
+    }
+
+    private void ZoomChanged(object sender, RoutedPropertyChangedEventArgs<double> e) { if (PageImage is not null) UpdateZoom(); }
+    private void UpdateZoom()
+    {
+        if (PageImage.Source is not System.Windows.Media.Imaging.BitmapSource bitmap) return;
+        PageSurface.Width = baseWidth * ZoomSlider.Value/100;
+        PageSurface.Height = PageSurface.Width * bitmap.PixelHeight/bitmap.PixelWidth;
+        DrawBox();
+    }
+    private void SurfaceSizeChanged(object sender, SizeChangedEventArgs e) => DrawBox();
+    private Point Normalized(MouseEventArgs e) { var p = e.GetPosition(PageSurface); return new(Math.Clamp(p.X/PageSurface.ActualWidth, 0, 1), Math.Clamp(p.Y/PageSurface.ActualHeight, 0, 1)); }
+    private void SelectionDown(object sender, MouseButtonEventArgs e)
+    {
+        if (busy || input is null) return;
+        start = Normalized(e); before = box?.ToArray(); dragMode = 0;
+        if (box is not null && Math.Abs(start.X-box[0]-box[2])*PageSurface.ActualWidth < 18 && Math.Abs(start.Y-box[1]-box[3])*PageSurface.ActualHeight < 18) dragMode = 2;
+        else if (box is not null && start.X >= box[0] && start.X <= box[0]+box[2] && start.Y >= box[1] && start.Y <= box[1]+box[3]) dragMode = 1;
+        PageSurface.CaptureMouse(); e.Handled = true;
+    }
+    private void SelectionMove(object sender, MouseEventArgs e)
+    {
+        if (!PageSurface.IsMouseCaptured || e.LeftButton != MouseButtonState.Pressed) return;
+        var p = Normalized(e);
+        if (dragMode == 1 && before is not null) box = [Math.Clamp(before[0]+p.X-start.X, 0, 1-before[2]), Math.Clamp(before[1]+p.Y-start.Y, 0, 1-before[3]), before[2], before[3]];
+        else if (dragMode == 2 && before is not null) box = [before[0], before[1], Math.Clamp(p.X-before[0], 0, 1-before[0]), Math.Clamp(p.Y-before[1], 0, 1-before[1])];
+        else box = [Math.Min(p.X,start.X), Math.Min(p.Y,start.Y), Math.Abs(p.X-start.X), Math.Abs(p.Y-start.Y)];
+        DrawBox();
+    }
+    private void SelectionUp(object sender, MouseButtonEventArgs e) { PageSurface.ReleaseMouseCapture(); if (box is not null && (box[2] <= 0 || box[3] <= 0)) box = null; DrawBox(); }
+    private void DrawBox()
+    {
+        if (SelectionBox is null) return;
+        SelectionBox.Visibility = ResizeHandle.Visibility = box is null ? Visibility.Collapsed : Visibility.Visible;
+        if (box is null) return;
+        double w = PageSurface.Width, h = PageSurface.Height;
+        if (!double.IsFinite(w) || !double.IsFinite(h)) return;
+        Canvas.SetLeft(SelectionBox, box[0]*w); Canvas.SetTop(SelectionBox, box[1]*h); SelectionBox.Width = box[2]*w; SelectionBox.Height = box[3]*h;
+        Canvas.SetLeft(ResizeHandle, (box[0]+box[2])*w-6); Canvas.SetTop(ResizeHandle, (box[1]+box[3])*h-6);
+    }
+    private void DeleteDocumentCopies() { if (displayInput is not null && displayInput != input && File.Exists(displayInput)) File.Delete(displayInput); if (input is not null && File.Exists(input)) File.Delete(input); }
+    private void WindowClosing(object? sender, CancelEventArgs e)
+    {
+        if (busy) { e.Cancel = true; StatusLabel.Text = "Espera a que termine la operación antes de cerrar."; return; }
+        ForgetIdentities();
+        try { foreach (string file in Directory.GetFiles(session)) File.Delete(file); Directory.Delete(session); } catch (IOException) { }
+    }
+}

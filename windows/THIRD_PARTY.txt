@@ -1,0 +1,17 @@
+FirmaVisible Windows 0.2
+Código fuente: https://github.com/eduardocvk/firmar_certificado/tree/main/windows
+Licencia de la aplicación Windows: AGPL-3.0-or-later. Sin garantía.
+
+iText Community 9.8.0 y adaptador Bouncy Castle
+Copyright (c) Apryse Group NV. AGPL-3.0-or-later y condiciones adicionales de iText.
+https://github.com/itext/itext-dotnet
+https://itextpdf.com/how-buy/AGPLv3-license
+Se conserva la línea Producer y la información de licencia en los PDF generados.
+
+Bouncy Castle .NET: licencia permisiva de Bouncy Castle.
+https://www.bouncycastle.org/licence.html
+
+.NET y Windows SDK: licencias de Microsoft incluidas por los paquetes respectivos.
+El visor utiliza Windows.Data.Pdf del sistema operativo.
+
+El resto de componentes Java y Android del repositorio conservan Apache-2.0.

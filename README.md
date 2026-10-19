@@ -2,7 +2,7 @@
 
 Aplicaciones locales para **Windows 10/11 x64** y **Android 8 o posterior** que firman PDF con certificado digital y permiten elegir la posición de su apariencia visible.
 
-**Versión 0.1.0 de pruebas.** Implementa firma con certificado y comprobación criptográfica, no una certificación jurídica del documento. No se ha probado con el certificado FNMT real del propietario del proyecto. Conviene empezar con un PDF de prueba y comprobar el resultado en Adobe Reader y en el sistema al que se enviará.
+**Windows 0.2.0 en C#/.NET; Android 0.1.0. Versiones de pruebas.** Implementa firma con certificado y comprobación criptográfica, no una certificación jurídica del documento. No se ha probado con el certificado FNMT real del propietario del proyecto. Conviene empezar con un PDF de prueba y comprobar el resultado en Adobe Reader y en el sistema al que se enviará.
 
 ## Descargar y utilizar
 
@@ -12,10 +12,12 @@ También puedes abrir una ejecución correcta en [Actions → Compilar y comprob
 
 | Artefacto | Uso |
 |---|---|
-| `FirmaVisible-Windows` | Extrae el ZIP descargado y el ZIP interior; conserva toda la carpeta `FirmaVisible` y ejecuta `FirmaVisible.exe`. Incluye Java. No requiere permisos de administrador. |
+| `FirmaVisible-Windows-NET` | Extrae el ZIP y conserva toda la carpeta `FirmaVisible`; ejecuta `FirmaVisible.exe`. Incluye .NET, sin Java. No requiere permisos de administrador. |
 | `FirmaVisible-Android-pruebas` | Extrae el APK y ábrelo en Android. Si Android lo solicita, permite instalar aplicaciones desde la aplicación con la que hayas abierto el APK. |
 
 Los artefactos de Actions requieren iniciar sesión en GitHub y caducan según su política de conservación. El APK es una **compilación de depuración para pruebas**, firmada con una clave de desarrollo, distinta del certificado usado para firmar documentos. Entre compilaciones de CI puede ser necesario desinstalar la anterior para instalar la nueva. No es una distribución de producción ni está publicada en Google Play.
+
+**SmartScreen:** la descarga de Windows está sin firma de editor y puede bloquearse. C# no elimina ese aviso. La vía preparada para distribución confiable es Microsoft Store mediante MSIX, pendiente de cuenta verificada y aprobación. Consulta [distribución y firma de código](windows/DISTRIBUCION.md). No se modifica la seguridad de Windows.
 
 ### Windows
 
@@ -58,11 +60,12 @@ Los certificados abiertos directamente permanecen en memoria durante la sesión 
 
 ## Desarrollo y compilación
 
-Requisitos: JDK 17. Para Android: SDK 35 y Build Tools 35.0.0, con `ANDROID_HOME` configurado. No hace falta Flutter. El wrapper descarga Gradle 8.13.
+Windows: SDK .NET 10. Android y motor Java: JDK 17. Para Android: SDK 35 y Build Tools 35.0.0, con `ANDROID_HOME` configurado. No hace falta Flutter. El wrapper descarga Gradle 8.13.
 
 ```powershell
-# Windows: probar el motor y crear la aplicación portable con Java incluido
-.\gradlew.bat :pdf:test :desktop:packageWindows
+# Windows: probar el motor C# y crear la aplicación con .NET incluido
+dotnet run --project windows/FirmaVisible.Tests -c Release -- artifacts/windows-tests
+.\scripts\Build-Windows.ps1
 
 # Android: APK de pruebas, APK de instrumentación y lint
 .\gradlew.bat -PwithAndroid=true :android:assembleDebug :android:assembleAndroidTest :android:lintDebug
@@ -74,7 +77,7 @@ Requisitos: JDK 17. Para Android: SDK 35 y Build Tools 35.0.0, con `ANDROID_HOME
 .\scripts\verify-openssl.ps1
 ```
 
-En Linux/macOS utiliza `bash ./gradlew`. Si solo desarrollas el motor o Windows y no tienes SDK, Android no se incluye hasta pasar `-PwithAndroid=true`. Resultados: `desktop/build/windows/FirmaVisible/` y `android/build/outputs/apk/debug/android-debug.apk`.
+En Linux/macOS utiliza `bash ./gradlew`. Android no se incluye en Gradle hasta pasar `-PwithAndroid=true`. Windows se compila con .NET de forma independiente. Resultados: `artifacts/windows/FirmaVisible/` y `android/build/outputs/apk/debug/android-debug.apk`.
 
 El flujo de CI compila Windows y Android, ejecuta las pruebas del motor, verifica CMS con OpenSSL y prueba la firma y su apariencia con el renderizador nativo en un emulador Android. Una compilación correcta no sustituye la prueba de extremo a extremo con FNMT, Adobe y el destinatario real.
 
@@ -82,7 +85,7 @@ El flujo de CI compila Windows y Android, ejecuta las pruebas del motor, verific
 
 - `core`: identidades, importación PKCS#12, CMS y geometría normalizada.
 - `pdf`: motor PDF y pruebas de integración en JVM.
-- `desktop`: interfaz Swing y acceso Windows-MY. Se eligió Java para compartir el motor criptográfico sin un puente Flutter adicional.
+- `windows`: aplicación C#/.NET 10 y WPF, renderizador nativo Windows.Data.Pdf, iText y claves del almacén de Windows o PKCS#12. [Compilación y licencias](windows/README.md).
 - `android`: interfaz nativa, renderizador PDF de Android, KeyChain y selector de documentos. El motor PDF se genera desde la misma fuente, cambiando exclusivamente el namespace de PDFBox.
 - [Estado y validación](docs/VALIDACION.md), [decisiones técnicas](docs/ARQUITECTURA.md).
 
@@ -90,4 +93,4 @@ Antes de distribuir una versión de producción: completar pruebas reales FNMT y
 
 ## Licencias
 
-Código del proyecto: Apache-2.0. PDFBox y su port Android: Apache-2.0; Bouncy Castle: licencia propia permisiva; runtime Eclipse Temurin: sus licencias incluidas en la distribución. Consulta [THIRD_PARTY.md](THIRD_PARTY.md).
+Windows C# (`windows/`): **AGPL-3.0-or-later**, con iText Community y sus avisos. Código Java y Android: Apache-2.0. Bouncy Castle: licencia permisiva; .NET: licencias incluidas. La licencia Apache de la raíz no sustituye la licencia AGPL del módulo Windows. Consulta [THIRD_PARTY.md](THIRD_PARTY.md) y [windows/LICENSE.txt](windows/LICENSE.txt).

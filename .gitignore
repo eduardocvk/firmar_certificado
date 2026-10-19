@@ -1,5 +1,9 @@
 .tools/
 .gradle/
+**/bin/
+**/obj/
+artifacts/
+.vs/
 **/build/
 local.properties
 .idea/
