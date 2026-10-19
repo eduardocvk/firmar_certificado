@@ -25,10 +25,10 @@ public sealed class SignaturePreview : FrameworkElement
         context.PushClip(new RectangleGeometry(new Rect(0, 0, ActualWidth, ActualHeight)));
         context.PushTransform(new ScaleTransform(ActualWidth / logicalWidth, ActualHeight / logicalHeight));
         var rectangle = new Rect(0, 0, logicalWidth, logicalHeight);
-        if (design.Decorated) context.DrawRectangle(new SolidColorBrush(Color.FromRgb(242, 247, 255)), new Pen(new SolidColorBrush(Color.FromRgb(41, 89, 166)), .7), rectangle);
+        if (design.Decorated) context.DrawRectangle(null, new Pen(new SolidColorBrush(Color.FromRgb(41, 89, 166)), .7), rectangle);
         try
         {
-            var layout = SignatureArt.Layout((float)logicalWidth, (float)logicalHeight, design.Resolve(name, issuer, DateTimeOffset.Now), design.HasImage);
+            var layout = SignatureArt.Layout((float)logicalWidth, (float)logicalHeight, design.Resolve(name, issuer, DateTimeOffset.Now), design.HasImage, design.TextSize);
             if (image is not null)
             {
                 double scale = Math.Min(layout.ImageWidth / image.PixelWidth, layout.ImageHeight / image.PixelHeight);

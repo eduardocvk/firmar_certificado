@@ -13,7 +13,7 @@ final class AppearanceSettings {
         var prefs=context.getSharedPreferences("appearance",Context.MODE_PRIVATE);
         byte[] image=null;
         try{File file=new File(context.getFilesDir(),"signature-image.png");if(file.exists()&&file.length()<=4*1024*1024)image=Files.readAllBytes(file.toPath());}catch(IOException ignored){}
-        try{return new SignatureAppearance(prefs.getString("text",SignatureAppearance.DEFAULT_TEXT),image,prefs.getBoolean("decorated",true));}
+        try{return new SignatureAppearance(prefs.getString("text",SignatureAppearance.DEFAULT_TEXT),image,prefs.getInt("designVersion",1)>=2&&prefs.getBoolean("decorated",false),prefs.getFloat("textSize",8));}
         catch(IllegalArgumentException e){return SignatureAppearance.standard();}
     }
     static void save(Context context,SignatureAppearance style)throws IOException {
@@ -23,7 +23,7 @@ final class AppearanceSettings {
             File temp=File.createTempFile("appearance-",".png",context.getFilesDir());
             try{Files.write(temp.toPath(),bytes);Files.move(temp.toPath(),image.toPath(),StandardCopyOption.REPLACE_EXISTING,StandardCopyOption.ATOMIC_MOVE);}finally{temp.delete();}
         }
-        if(!context.getSharedPreferences("appearance",Context.MODE_PRIVATE).edit().putString("text",style.template).putBoolean("decorated",style.decorated).commit())
+        if(!context.getSharedPreferences("appearance",Context.MODE_PRIVATE).edit().putString("text",style.template).putBoolean("decorated",style.decorated).putFloat("textSize",style.textSize).putInt("designVersion",2).commit())
             throw new IOException("No se pudo guardar la apariencia.");
     }
     static byte[] importImage(InputStream input)throws IOException {

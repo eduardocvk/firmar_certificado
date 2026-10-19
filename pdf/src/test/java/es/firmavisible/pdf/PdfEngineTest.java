@@ -55,9 +55,9 @@ class PdfEngineTest {
             try(PDDocument doc=PDDocument.load(output)){
                 assertEquals("ETSI.CAdES.detached",doc.getSignatureDictionaries().get(0).getSubFilter());
                 BufferedImage image=new PDFRenderer(doc).renderImage(0,1);
-                // Blue appearance background lies exactly inside the selected displayed rectangle.
-                int color=image.getRGB(Math.round(image.getWidth()*.17f),Math.round(image.getHeight()*.68f));
-                java.awt.Color c=new java.awt.Color(color);assertTrue(c.getBlue()>c.getRed()&&c.getRed()>200,"Appearance misplaced at rotation "+rotation);
+                int ink=0;
+                for(int y=(int)(image.getHeight()*.55);y<(int)(image.getHeight()*.7);y++)for(int x=(int)(image.getWidth()*.15);x<(int)(image.getWidth()*.65);x++){int c=image.getRGB(x,y);if(((c>>16)&255)<160&&((c>>8)&255)<160)ink++;}
+                assertTrue(ink>50,"Text misplaced at rotation "+rotation);
                 int white=image.getRGB(Math.round(image.getWidth()*.1f),Math.round(image.getHeight()*.5f));assertEquals(0xffffff,white&0xffffff);
                 var sig=doc.getSignatureDictionaries().get(0);
                 byte[] bytes=Files.readAllBytes(output.toPath());

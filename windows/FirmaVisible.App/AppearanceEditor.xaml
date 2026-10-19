@@ -5,6 +5,9 @@
     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
       <StackPanel Margin="0,0,12,0">
         <Border Background="White" CornerRadius="14" Padding="24" Margin="0,0,0,18"><Viewbox Stretch="Uniform" MaxHeight="180"><local:SignaturePreview x:Name="DesignPreview" Width="480" Height="156"/></Viewbox></Border>
+        <TextBlock x:Name="TextSizeLabel" FontWeight="SemiBold"/>
+        <Slider x:Name="TextSizeSlider" Minimum="4" Maximum="18" Value="8" TickFrequency="0.5" IsSnapToTickEnabled="True" ValueChanged="DraftChanged" AutomationProperties.Name="Tamaño del texto de la firma" Margin="0,10,0,8"/>
+        <TextBlock Text="De 4 a 18 pt. Se reduce si hace falta para caber. El tamaño se aplica al PDF y se guarda con tu diseño." FontSize="11" Foreground="#66758E" TextWrapping="Wrap" Margin="0,0,0,18"/>
         <TextBlock Text="Texto de la firma" FontWeight="SemiBold" Margin="0,0,0,8"/>
         <Border Background="White" CornerRadius="10" Padding="4"><TextBox x:Name="TemplateText" MinHeight="104" MaxLength="600" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" FontSize="14" Padding="10" BorderThickness="0" TextChanged="DraftChanged"/></Border>
         <WrapPanel Margin="0,8,0,8"><Button Content="+ Nombre" Tag="{}{nombre}" Click="InsertToken" Margin="0,0,8,0"/><Button Content="+ Fecha" Tag="{}{fecha}" Click="InsertToken" Margin="0,0,8,0"/><Button Content="+ Emisor" Tag="{}{emisor}" Click="InsertToken"/></WrapPanel>
@@ -13,7 +16,8 @@
         <TextBlock x:Name="ImageState" Text="Sin imagen" Foreground="#66758E" Margin="0,6,0,8"/>
         <WrapPanel><Button Content="Elegir PNG o JPEG…" Click="ChooseImage" Margin="0,0,8,0"/><Button Content="Quitar imagen" Click="RemoveImage"/></WrapPanel>
         <TextBlock Text="Se mantiene la proporción y la transparencia. Deja el texto vacío para utilizar solo la imagen." FontSize="11" Foreground="#66758E" TextWrapping="Wrap" Margin="0,8,0,12"/>
-        <CheckBox x:Name="DecoratedCheck" Content="Fondo claro y marco" IsChecked="True" Checked="DraftChanged" Unchecked="DraftChanged" Margin="0,8,0,14"/>
+        <CheckBox x:Name="DecoratedCheck" Content="Mostrar marco (fondo transparente)" IsChecked="False" Checked="DraftChanged" Unchecked="DraftChanged" Margin="0,8,0,14"/>
+        <TextBlock Text="El fondo de la firma es transparente. Si tu imagen tiene fondo blanco, utiliza un PNG con transparencia para quitarlo." FontSize="11" Foreground="#66758E" TextWrapping="Wrap" Margin="0,0,0,14"/>
         <TextBlock Text="El diseño se guarda en tu perfil de Windows, sin certificado ni contraseña." FontSize="11" Foreground="#66758E" TextWrapping="Wrap"/>
         <TextBlock x:Name="ValidationText" Foreground="#A13B30" TextWrapping="Wrap" Margin="0,12,0,4"/>
       </StackPanel>

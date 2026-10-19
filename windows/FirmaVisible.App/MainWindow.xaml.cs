@@ -177,7 +177,7 @@ public partial class MainWindow : Window
     }
     private void AboutClick(object sender, RoutedEventArgs e)
     {
-        if (MessageBox.Show(this, "FirmaPDF 0.3.1 · C#/.NET y WPF\n\nMotor PDF: iText Community, Copyright Apryse Group NV.\nEsta aplicación Windows se distribuye bajo AGPL-3.0-or-later, sin garantía.\nFuente Noto Sans: SIL Open Font License 1.1.\n\nEl código fuente y las instrucciones completas están disponibles en GitHub. ¿Abrirlos?", "Código fuente y licencias", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+        if (MessageBox.Show(this, "FirmaPDF 0.3.2 · C#/.NET y WPF\n\nMotor PDF: iText Community, Copyright Apryse Group NV.\nEsta aplicación Windows se distribuye bajo AGPL-3.0-or-later, sin garantía.\nFuente Noto Sans: SIL Open Font License 1.1.\n\nEl código fuente y las instrucciones completas están disponibles en GitHub. ¿Abrirlos?", "Código fuente y licencias", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
             Process.Start(new ProcessStartInfo("https://github.com/eduardocvk/firmar_certificado/tree/main/windows") { UseShellExecute = true });
     }
 

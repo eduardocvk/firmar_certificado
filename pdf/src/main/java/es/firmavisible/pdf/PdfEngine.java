@@ -149,13 +149,12 @@ public final class PdfEngine {
         }
         AppearanceLayout layout;
         try {
-            layout=AppearanceLayout.fit(width,height,text,imageBytes!=null,value->{
+            layout=AppearanceLayout.fit(width,height,text,imageBytes!=null,style.textSize,value->{
                 try{return font.getStringWidth(value)/1000.0;}catch(IOException e){throw new java.io.UncheckedIOException(e);}
             });
         } catch(IllegalArgumentException e){throw new IOException("No se puede dibujar el texto de firma: "+e.getMessage(),e);}
         try(PDPageContentStream cs=new PDPageContentStream(doc,appearance)) {
             if(style.decorated) {
-                cs.setNonStrokingColor(.95f,.97f,1f);cs.addRect(0,0,width,height);cs.fill();
                 cs.setStrokingColor(.16f,.35f,.65f);cs.setLineWidth(.7f);cs.addRect(.5f,.5f,width-1,height-1);cs.stroke();
             }
             if(imageBytes!=null) {

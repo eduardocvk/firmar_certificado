@@ -113,7 +113,9 @@ internal static class Program
             int x = (int)(rgb.PixelWidth*.17), y = (int)(rgb.PixelHeight*.68);
             byte[] pixel = new byte[4]; rgb.CopyPixels(new Int32Rect(x,y,1,1), pixel,4,0);
             SaveImage(rgb, Path.Combine(root,$"rotation-{rotation}.png"));
-            Check(pixel[0] > pixel[2] && pixel[2] > 200, $"Apariencia fuera de sitio ({rotation}), BGR={string.Join(',', pixel)}, tamaño={rgb.PixelWidth}x{rgb.PixelHeight}.");
+            int ink = 0; byte[] pixels = new byte[rgb.PixelWidth * rgb.PixelHeight * 4]; rgb.CopyPixels(pixels, rgb.PixelWidth * 4, 0);
+            for (int py=(int)(rgb.PixelHeight*.55); py<(int)(rgb.PixelHeight*.7); py++) for(int px=(int)(rgb.PixelWidth*.15); px<(int)(rgb.PixelWidth*.65); px++) { int index=(py*rgb.PixelWidth+px)*4; if(pixels[index+2]<160 && pixels[index+1]<160) ink++; }
+            Check(ink > 50, $"Texto de firma fuera de sitio ({rotation}).");
             Console.WriteLine($"Rotación {rotation}: firma RSA, CMS y apariencia correctos.");
         }
 

@@ -1,9 +1,14 @@
-FirmaPDF Android 0.2.1: nuevo nombre en el lanzador y la interfaz; se mantiene el identificador de la aplicación y sus preferencias.
+FirmaPDF Android 0.2.2: fondo transparente y tamaño del texto configurable.
+
+- Texto de 4 a 18 pt, con vista previa y guardado; 8 pt por defecto y reducción para caber.
+- Imagen con más espacio: la mitad del ancho útil cuando hay texto.
+- Fondo transparente y marco opcional sin relleno. Los diseños anteriores mantienen texto e imagen y pasan a fondo transparente sin marco.
+- Para una imagen sin fondo blanco utiliza un PNG con transparencia.
 
 Android 0.2: diseño renovado, firma visible personalizada y sello de tiempo.
 
 - Interfaz con tarjetas, vista del PDF y adaptación a vertical/horizontal.
-- **Personalizar firma**: texto propio, variables `{nombre}`, `{fecha}`, `{emisor}`, imagen PNG/JPEG y fondo con marco o transparente.
+- **Personalizar firma**: texto propio, variables `{nombre}`, `{fecha}`, `{emisor}`, imagen PNG/JPEG y fondo transparente y marco opcional.
 - El diseño se conserva localmente para próximas firmas. No guarda certificado ni contraseña. La imagen se ajusta sin deformarse y se retiran sus metadatos.
 - **Sello de tiempo**: RFC3161 de DigiCert. Envía solo una huella SHA-256 de la firma; nunca el PDF, la clave privada ni el archivo de certificado. Requiere Internet. Se puede desactivar para firmar sin conexión. Si se pide sello y falla, no se guarda una copia sin él.
 - Hora acreditada visible en la confirmación y en el panel de firmas de un visor compatible. `{fecha}` y la fecha de la apariencia siguen siendo la hora declarada del móvil.

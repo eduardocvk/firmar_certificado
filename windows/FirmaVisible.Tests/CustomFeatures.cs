@@ -50,7 +50,7 @@ internal static class CustomFeatures
     public static async Task RunAsync(string root, CertificateIdentity identity, Action<bool, string> check, Action<Action, string> refuses)
     {
         using var authority = new TestTimestampAuthority();
-        var design = new SignatureDesign("Revisado por {nombre}\nÁrea técnica · Málaga\n{fecha}", Image(), true);
+        var design = new SignatureDesign("Revisado por {nombre}\nÁrea técnica · Málaga\n{fecha}", Image(), true, 6.5f);
         foreach (int rotation in new[] { 0, 90, 180, 270 })
         {
             string source = Path.Combine(root, $"original-{rotation}.pdf"), output = Path.Combine(root, $"custom-{rotation}.pdf");
@@ -88,11 +88,33 @@ internal static class CustomFeatures
         var store = new UserPreferencesStore(Path.Combine(root, "preferences-test"));
         store.Save(new(design, false)); var reloaded = new UserPreferencesStore(Path.GetDirectoryName(store.FilePath)!).Load();
         check(!reloaded.UseTimestamp && reloaded.Design.Template == design.Template && reloaded.Design.ImagePng!.SequenceEqual(design.ImagePng!), "El diseño no persiste entre sesiones.");
+        check(reloaded.Design.TextSize == 6.5f, "El tamaño de texto no se conserva entre sesiones.");
         check(!File.ReadAllText(store.FilePath).Contains("PRIVATE KEY") && !File.ReadAllText(store.FilePath).Contains("Certificate"), "Las preferencias contienen datos de certificado.");
         store.Save(new(new SignatureDesign(SignatureDesign.DefaultText, null, false), true));
         check(store.Load().Design.ImagePng is null && store.Load().UseTimestamp, "No se conserva la retirada de imagen o el sello.");
         File.WriteAllText(store.FilePath, "invalid-json"); refuses(() => store.Load(), "Se ignoraron preferencias corruptas sin informar.");
         File.Delete(store.FilePath);
+        File.WriteAllText(store.FilePath, "{\"Template\":\"Diseño anterior\",\"Decorated\":true,\"ImagePng\":null,\"UseTimestamp\":false,\"Version\":1}");
+        var migrated = store.Load();
+        check(migrated.Design.Template == "Diseño anterior" && !migrated.Design.Decorated && migrated.Design.TextSize == 8 && !migrated.UseTimestamp, "No se migra el diseño anterior al fondo transparente.");
+        File.Delete(store.FilePath);
+        refuses(() => _ = new SignatureDesign("Texto", null, false, float.NaN), "Se admite un tamaño no finito.");
+        refuses(() => _ = new SignatureDesign("Texto", null, false, 19), "Se admite un tamaño fuera del rango.");
+        string colored = Path.Combine(root, "colored.pdf"), transparent = Path.Combine(root, "transparent.pdf");
+        using (var doc = new PdfDocument(new PdfWriter(colored)))
+        {
+            var canvas = new iText.Kernel.Pdf.Canvas.PdfCanvas(doc.AddNewPage(iText.Kernel.Geom.PageSize.A4));
+            canvas.SetFillColor(new iText.Kernel.Colors.DeviceRgb(51,153,204)).Rectangle(0,0,600,850).Fill(); canvas.Release();
+            var form = SignatureArt.Draw(doc, 320, 104, new SignatureDesign("Texto pequeño", Image(), true, 6), "Prueba", "Emisor", DateTimeOffset.Now);
+            check(System.Text.RegularExpressions.Regex.IsMatch(Encoding.Latin1.GetString(form.GetPdfObject().GetBytes()), @"\s6\s+Tf"), "El PDF no usa el tamaño seleccionado de 6 pt.");
+        }
+        if(File.Exists(transparent)) File.Delete(transparent);
+        PdfEngine.Sign(colored, transparent, new(0,.1,.5,.6,.2), identity, new SignatureDesign("Texto pequeño", Image(), true, 6));
+        var transparentPage = await PdfPreview.RenderAsync(PdfEngine.PreparePreview(transparent, root),0);
+        byte[] background = Pixel(transparentPage.Image, (int)(transparentPage.Image.PixelWidth*.12), (int)(transparentPage.Image.PixelHeight*.52));
+        check(Math.Abs(background[0]-204)<3 && Math.Abs(background[1]-153)<3 && Math.Abs(background[2]-51)<3, "La firma tapa el fondo de color de la página.");
+        check(PdfEngine.Verify(transparent).LatestCoversWholeFile, "La firma transparente no es íntegra.");
+        Save(transparentPage.Image, Path.Combine(root,"transparent.png"));
         byte[] normalized = ImageNormalizer.Normalize(Image(4096, 2048, 120));
         var decoded = ImageNormalizer.Decode(normalized);
         check(decoded.PixelWidth <= 1200 && decoded.PixelHeight <= 1200, "No se limita la imagen importada.");

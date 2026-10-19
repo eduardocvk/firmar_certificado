@@ -2,7 +2,7 @@
 
 Aplicaciones locales para **Windows 10/11 x64** y **Android 8 o posterior** que firman PDF con certificado digital y permiten elegir la posición de su apariencia visible.
 
-**Windows 0.3.1 en C#/.NET; Android 0.2.1. Versiones de pruebas.** Implementa firma con certificado y comprobación criptográfica, no una certificación jurídica del documento. El usuario confirmó que Android firma correctamente con su certificado en la versión anterior; las nuevas funciones y la versión Windows necesitan su comprobación manual con FNMT. Conviene empezar con un PDF de prueba y comprobar el resultado en Adobe Reader y en el sistema al que se enviará.
+**Windows 0.3.2 en C#/.NET; Android 0.2.2. Versiones de pruebas.** Implementa firma con certificado y comprobación criptográfica, no una certificación jurídica del documento. El usuario confirmó que Android firma correctamente con su certificado en la versión anterior; las nuevas funciones y la versión Windows necesitan su comprobación manual con FNMT. Conviene empezar con un PDF de prueba y comprobar el resultado en Adobe Reader y en el sistema al que se enviará.
 
 El nombre anterior era FirmaVisible. Se mantienen el identificador Android y la carpeta de preferencias Windows para conservar los diseños guardados. Los paquetes de versiones anteriores conservan sus nombres originales.
 
@@ -26,7 +26,7 @@ Los artefactos de Actions requieren iniciar sesión en GitHub y caducan según s
 1. Abre el PDF. La aplicación trabaja sobre una copia temporal del archivo abierto.
 2. Pulsa **Certificados de Windows** para usar un certificado instalado con su clave privada, o **Importar .p12 / .pfx** para abrir una copia protegida con contraseña. Un archivo `.cer` sin clave privada no sirve para firmar.
 3. Selecciona la página. Arrastra sobre ella para crear el recuadro; arrastra su interior para moverlo y su esquina inferior derecha para cambiar su tamaño.
-4. Personaliza texto e imagen, guarda tu diseño y activa o desactiva **Sello de tiempo**. El diseño y esa preferencia permanecen en el perfil de Windows, sin certificado ni contraseña.
+4. Personaliza texto e imagen, ajusta el texto entre 4 y 18 pt, guarda tu diseño y activa o desactiva **Sello de tiempo**. El diseño y esa preferencia permanecen en el perfil de Windows, sin certificado ni contraseña.
 5. Pulsa **Firmar y guardar copia**, elige un nombre nuevo y autoriza la identidad y el sello.
 6. Abre la copia firmada en Adobe Reader y consulta el panel de firmas.
 
@@ -34,11 +34,13 @@ Los artefactos de Actions requieren iniciar sesión en GitHub y caducan según s
 
 1. Abre un PDF desde la aplicación, o utiliza **Compartir / Abrir con → FirmaPDF** desde otra aplicación.
 2. En **Certificado**, elige una identidad del almacén de Android o abre tu `.p12/.pfx` con su contraseña. La importación directa solo dura la sesión; no guarda el certificado en disco. Si ya tienes instalado el certificado utilizado por AutoFirma, comprueba si aparece en el selector de Android. Si no aparece, puedes abrir tu copia `.p12/.pfx`.
-3. Pulsa **Personalizar firma** para guardar texto e imagen. Usa `{nombre}`, `{fecha}` y `{emisor}` para completarlos con el certificado elegido. Elige PNG/JPEG y fondo con marco o transparente. El diseño se conserva en este móvil.
+3. Pulsa **Personalizar firma** para guardar texto e imagen. Usa `{nombre}`, `{fecha}` y `{emisor}` para completarlos con el certificado elegido. Elige PNG/JPEG, ajusta el texto entre 4 y 18 pt y utiliza fondo transparente con marco opcional. El diseño se conserva en este móvil.
 4. Activa **Sello de tiempo** para solicitar RFC3161 a DigiCert (requiere Internet); desactívalo para firmar sin conexión. Solo se envía una huella de la firma. Si el servicio falla, no se guarda una firma sin el sello solicitado.
 5. Elige la página y dibuja el recuadro. Puedes moverlo, ajustar su esquina, ampliar con un pellizco y desplazar con dos dedos. **Ajustar** restablece el zoom.
 6. Pulsa **Firmar y guardar copia** y confirma la identidad y el uso del sello.
 7. Guarda el archivo con el selector de Android o compártelo. El menú **•••** permite guardar o compartir el último resultado y comprobar el PDF abierto.
+
+La firma tiene fondo transparente; el marco es opcional y la imagen ocupa la mitad del ancho útil cuando hay texto. El tamaño del texto se guarda con el diseño (8 pt por defecto); se reduce si hace falta para caber. Un fondo blanco que forme parte de la imagen no se elimina: utiliza PNG con transparencia.
 
 La previsualización de texto es orientativa; el recuadro se coloca en las coordenadas seleccionadas. El PDF final contiene nombre del certificado y fecha con zona horaria. El mínimo de recuadro es 100 × 42 puntos PDF. Android limita la apertura a 100 MiB y el certificado importado a 4 MiB. Windows y Android admiten imagen personalizada y texto de hasta 600 caracteres. La imagen se limita a 1200 píxeles de lado y se normaliza sin metadatos. Si el texto no cabe de forma legible, se pide ampliar el recuadro o acortarlo; no se trunca silenciosamente.
 

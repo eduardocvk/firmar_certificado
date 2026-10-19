@@ -6,7 +6,7 @@ El propietario confirmó que la versión Android anterior firma y que su firma e
 
 1. Abre el PDF y elige el certificado Android o `.p12/.pfx`.
 2. En **Personalizar firma**, escribe el texto y añade una imagen. Las variables `{nombre}`, `{fecha}` y `{emisor}` se sustituyen al firmar. El diseño se guarda en el almacenamiento privado del móvil, sin certificado ni contraseña.
-3. Elige fondo claro con marco o transparente. La imagen mantiene proporciones y transparencia; puede ocupar toda la apariencia dejando el texto vacío. La fuente Noto Sans se incorpora al PDF, incluidos acentos y caracteres latinos. Los caracteres no soportados provocan un error, sin sustituciones silenciosas.
+3. El fondo es transparente; el marco es opcional. Ajusta el texto entre 4 y 18 pt (8 pt por defecto); se reduce si hace falta para caber. La imagen mantiene proporciones y transparencia; puede ocupar toda la apariencia dejando el texto vacío. La fuente Noto Sans se incorpora al PDF, incluidos acentos y caracteres latinos. Los caracteres no soportados provocan un error, sin sustituciones silenciosas.
 4. Coloca el recuadro en la página. La vista previa utiliza la misma fuente y algoritmo de distribución; el texto exacto de fecha se fija al firmar. Si un diseño no cabe de forma legible, amplía el recuadro o reduce el texto.
 5. Activa o desactiva **Sello de tiempo** y pulsa **Firmar y guardar copia**. La confirmación informa de la identidad y del uso del servicio externo.
 6. Guarda o comparte. El menú **•••** recupera la última copia y permite comprobar firmas del PDF abierto.

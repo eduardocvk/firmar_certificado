@@ -14,12 +14,13 @@ public partial class AppearanceEditor : Window
     public AppearanceEditor(SignatureDesign design, string name, string issuer)
     {
         signerName = name; issuerName = issuer; image = design.ImagePng;
-        InitializeComponent(); TemplateText.Text = design.Template; DecoratedCheck.IsChecked = design.Decorated; initialized = true; Refresh();
+        InitializeComponent(); TemplateText.Text = design.Template; DecoratedCheck.IsChecked = design.Decorated; TextSizeSlider.Value = design.TextSize; initialized = true; Refresh();
     }
-    private SignatureDesign Current() => new(TemplateText.Text, image, DecoratedCheck.IsChecked == true);
+    private SignatureDesign Current() => new(TemplateText.Text, image, DecoratedCheck.IsChecked == true, (float)TextSizeSlider.Value);
     private void DraftChanged(object sender, RoutedEventArgs e) { if (initialized) Refresh(); }
     private void Refresh()
     {
+        TextSizeLabel.Text = $"Tamaño del texto · {TextSizeSlider.Value:0.#} pt";
         ImageState.Text = image is null ? "Sin imagen" : "Imagen preparada · se guardará con el diseño";
         try { DesignPreview.Update(Current(), signerName, issuerName); ValidationText.Text = ""; DesignPreview.Opacity = 1; }
         catch (ArgumentException ex) { ValidationText.Text = ex.Message; DesignPreview.Opacity = .3; }

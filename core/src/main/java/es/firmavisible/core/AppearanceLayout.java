@@ -11,11 +11,15 @@ public final class AppearanceLayout {
         this.size=size;textX=x;imageWidth=iw;imageHeight=ih;this.lines=lines;
     }
     public static AppearanceLayout fit(float width,float height,String text,boolean image,ToDoubleFunction<String> measure) {
-        float iw=image?(text.trim().isEmpty()?width-12:(width-18)*.32f):0;
+        return fit(width,height,text,image,8,measure);
+    }
+    public static AppearanceLayout fit(float width,float height,String text,boolean image,float textSize,ToDoubleFunction<String> measure) {
+        if(!Float.isFinite(textSize)||textSize<4||textSize>18)throw new IllegalArgumentException("El tamaño del texto debe estar entre 4 y 18 pt.");
+        float iw=image?(text.trim().isEmpty()?width-12:(width-18)*.5f):0;
         float x=image&&!text.trim().isEmpty()?iw+12:6;
         if(text.trim().isEmpty())return new AppearanceLayout(10,x,iw,height-12,Collections.emptyList());
         float available=width-x-6;
-        for(float size=Math.min(11,(height-12)/3.4f);size>=4;size-=.25f) {
+        for(float size=textSize;size>=4;size-=.25f) {
             List<String> lines=new ArrayList<>();boolean fits=true;
             for(String paragraph:text.split("\n",-1)) {
                 String line="";

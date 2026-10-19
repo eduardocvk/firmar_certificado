@@ -20,7 +20,7 @@ La suite usa identidades efímeras autofirmadas «NO REAL», comprueba RSA y EC,
 
 1. Abrir PDF: la vista previa y la firma utilizan una copia local del mismo documento.
 2. Elegir certificado del almacén personal de Windows o abrir PKCS#12 con contraseña. La importación utiliza `EphemeralKeySet` y dura la sesión.
-3. Personalizar texto e imagen, incluyendo `{nombre}`, `{fecha}` y `{emisor}`. El diseño se conserva en `%LOCALAPPDATA%\FirmaVisible\settings.json` junto con la preferencia de sello, sin certificado ni contraseña.
+3. Personalizar texto e imagen con fondo transparente, marco opcional y texto de 4 a 18 pt, incluyendo `{nombre}`, `{fecha}` y `{emisor}`. El diseño se conserva en `%LOCALAPPDATA%\FirmaVisible\settings.json` junto con la preferencia de sello, sin certificado ni contraseña.
 4. Activar o desactivar el sello de tiempo. Elegir página y dibujar, mover o redimensionar el recuadro. Ajustar zoom si hace falta.
 5. Confirmar identidad y uso del sello; guardar una copia con nombre nuevo. **Abrir última copia firmada** utiliza el visor configurado en Windows.
 

@@ -23,19 +23,20 @@ public static class SignatureArt
     private static readonly Lazy<PdfFont> Metrics = new(CreateFont);
     private static readonly object FontLock = new();
 
-    public static SignatureLayout Layout(float width, float height, string text, bool image)
+    public static SignatureLayout Layout(float width, float height, string text, bool image, float textSize = 8)
     {
+        if (!float.IsFinite(textSize) || textSize < 4 || textSize > 18) throw new ArgumentException("El tamaño del texto debe estar entre 4 y 18 pt.");
         if (width < 13 || height < 13) throw new ArgumentException("Amplía el recuadro para ver el diseño.");
         lock (FontLock)
         {
             var font = Metrics.Value;
             foreach (var rune in text.EnumerateRunes()) if (rune.Value != '\n' && !font.ContainsGlyph(rune.Value))
                 throw new ArgumentException($"La fuente no admite el carácter U+{rune.Value:X4}. Cámbialo o utiliza una imagen.");
-            float iw = image ? string.IsNullOrWhiteSpace(text) ? width - 12 : (width - 18) * .32f : 0;
+            float iw = image ? string.IsNullOrWhiteSpace(text) ? width - 12 : (width - 18) * .5f : 0;
             float x = image && !string.IsNullOrWhiteSpace(text) ? iw + 12 : 6;
             if (string.IsNullOrWhiteSpace(text)) return new(10, x, iw, height - 12, []);
             float available = width - x - 6;
-            for (float size = Math.Min(11, (height - 12) / 3.4f); size >= 4; size -= .25f)
+            for (float size = textSize; size >= 4; size -= .25f)
             {
                 List<string> lines = []; bool fits = true;
                 foreach (string paragraph in text.Split('\n'))
@@ -64,12 +65,11 @@ public static class SignatureArt
     public static PdfFormXObject Draw(PdfDocument doc, float width, float height, SignatureDesign design, string name, string issuer, DateTimeOffset time)
     {
         string text = design.Resolve(name, issuer, time);
-        var layout = Layout(width, height, text, design.HasImage);
+        var layout = Layout(width, height, text, design.HasImage, design.TextSize);
         var form = new PdfFormXObject(new Rectangle(width, height));
         var canvas = new PdfCanvas(form, doc);
         if (design.Decorated)
         {
-            canvas.SetFillColor(new DeviceRgb(242, 247, 255)).Rectangle(0, 0, width, height).Fill();
             canvas.SetStrokeColor(new DeviceRgb(41, 89, 166)).SetLineWidth(.7f).Rectangle(.5f, .5f, width - 1, height - 1).Stroke();
         }
         if (design.ImagePng is { } png)

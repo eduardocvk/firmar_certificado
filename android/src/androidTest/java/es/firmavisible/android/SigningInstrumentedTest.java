@@ -87,7 +87,7 @@ public class SigningInstrumentedTest {
                     diagnostic(context,"rotation-"+rotation+".png","image/png",image.toByteArray(),true);
                     diagnostic(context,"signed-"+rotation+".pdf","application/pdf",signedBytes,false);
                     diagnostic(context,"display-"+rotation+".pdf","application/pdf",java.nio.file.Files.readAllBytes(display.toPath()),false);
-                    int pixel=bitmap.getPixel(Math.round(bitmap.getWidth()*.17f),Math.round(bitmap.getHeight()*.68f));assertTrue("Visible signature at rotation "+rotation+", pixel="+Integer.toHexString(pixel)+", size="+bitmap.getWidth()+"x"+bitmap.getHeight(),Color.blue(pixel)>Color.red(pixel)&&Color.red(pixel)>200);bitmap.recycle();
+                    int ink=0;for(int y=(int)(bitmap.getHeight()*.55);y<(int)(bitmap.getHeight()*.7);y++)for(int x=(int)(bitmap.getWidth()*.15);x<(int)(bitmap.getWidth()*.65);x++){int pixel=bitmap.getPixel(x,y);if(Color.red(pixel)<160&&Color.green(pixel)<160)ink++;}assertTrue("Visible signature text at rotation "+rotation,ink>50);bitmap.recycle();
                 }
                 assertTrue(PdfEngine.verify(output).latestCoversWholeFile);assertTrue(display.delete());
                 assertTrue(output.delete());assertTrue(input.delete());

@@ -58,6 +58,21 @@ class TimestampAndAppearanceTest {
         assertThrows(Exception.class,()->PdfEngine.sign(source,directory.resolve("too-long.pdf").toFile(),new Placement(0,.1f,.5f,.18f,.06f),identity(),new SignatureAppearance("Texto largo ".repeat(49),null,true),null));
         assertFalse(Files.exists(directory.resolve("too-long.pdf")));
     }
+    @Test void transparentAppearancePreservesColoredPageAndUsesChosenTextSize()throws Exception {
+        File source=directory.resolve("colored.pdf").toFile(),output=directory.resolve("transparent.pdf").toFile();
+        try(PDDocument doc=new PDDocument()){PDPage page=new PDPage(PDRectangle.A4);doc.addPage(page);try(PDPageContentStream cs=new PDPageContentStream(doc,page)){cs.setNonStrokingColor(.2f,.6f,.8f);cs.addRect(0,0,600,850);cs.fill();}doc.save(source);}
+        PdfEngine.sign(source,output,new Placement(0,.1f,.5f,.6f,.2f),identity(),new SignatureAppearance("Texto pequeño",image(),true,6),null);
+        try(PDDocument doc=PDDocument.load(output)){
+            BufferedImage bitmap=new PDFRenderer(doc).renderImage(0);java.awt.Color pixel=new java.awt.Color(bitmap.getRGB((int)(bitmap.getWidth()*.12),(int)(bitmap.getHeight()*.52)));
+            assertTrue(Math.abs(pixel.getRed()-51)<3&&Math.abs(pixel.getGreen()-153)<3&&Math.abs(pixel.getBlue()-204)<3,"El recuadro tapa el contenido de la página");
+            var appearance=doc.getPage(0).getAnnotations().get(0).getAppearance().getNormalAppearance().getAppearanceStream();
+            try(InputStream stream=appearance.getContents()){String commands=new String(stream.readAllBytes(),java.nio.charset.StandardCharsets.ISO_8859_1);assertTrue(commands.matches("(?s).*\\s6\\s+Tf.*"),"El PDF no usa los 6 pt seleccionados");}
+        }
+        assertTrue(PdfEngine.verify(output).latestCoversWholeFile);
+        assertFalse(SignatureAppearance.standard().decorated);
+        assertThrows(IllegalArgumentException.class,()->new SignatureAppearance("Texto",null,false,Float.NaN));
+        assertThrows(IllegalArgumentException.class,()->new SignatureAppearance("Texto",null,false,19));
+    }
     @Test void rejectsWrongNonceWrongImprintAndUntrustedAuthority()throws Exception {
         TestTsa authority=new TestTsa();byte[] signature=new byte[]{1,2,3};
         var roots=Collections.singleton(new TrustAnchor(authority.root,null));

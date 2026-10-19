@@ -1,9 +1,15 @@
-FirmaPDF Windows 0.3.1: nuevo nombre, con los diseños guardados de FirmaVisible conservados.
+FirmaPDF Windows 0.3.2: fondo transparente y tamaño del texto configurable.
+
+- Texto de 4 a 18 pt, con vista previa; 8 pt por defecto y reducción para caber sin recortar.
+- Imagen con más espacio: la mitad del ancho útil cuando hay texto.
+- Sin fondo ni marco por defecto. Marco opcional sin relleno.
+- Migración del diseño anterior: conserva texto, imagen y sello; elimina el fondo y guarda el tamaño elegido.
+- La transparencia de la imagen depende del archivo: usa PNG con canal alfa si tiene fondo blanco.
 
 Windows 0.3 en C#/.NET y WPF: diseño renovado, apariencia personalizada y sello de tiempo.
 
 - Abrir PDF y elegir certificado del almacén de Windows o archivo `.p12/.pfx`.
-- **Personalizar texto e imagen** con las variables `{nombre}`, `{fecha}` y `{emisor}`. PNG/JPEG, transparencia, proporción conservada y fondo con marco o transparente.
+- **Personalizar texto e imagen** con las variables `{nombre}`, `{fecha}` y `{emisor}`. PNG/JPEG, transparencia, proporción conservada y fondo transparente y marco opcional.
 - El diseño se guarda en `%LOCALAPPDATA%\FirmaVisible\settings.json` para próximas sesiones, sin certificado, contraseña ni clave privada.
 - **Sello de tiempo** RFC3161 de DigiCert, opcional y con Internet. Envía solo la huella SHA-256 de la firma y el nonce; nunca el PDF ni tus claves. Si falla, no se guarda una copia sin el sello solicitado.
 - Hora acreditada en la confirmación final y en el panel de firmas del visor. La fecha impresa sigue siendo la del ordenador.
