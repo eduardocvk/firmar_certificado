@@ -30,6 +30,7 @@ public final class MainActivity extends Activity {
     private Identity identity;
     private File session,input,signed;
     private String originalName="documento.pdf";
+    private String signedName="documento_firmado.pdf";
     private int page,pages;
     private boolean busy;
 
@@ -137,18 +138,18 @@ public final class MainActivity extends Activity {
         float[] box=preview.selection();if(input==null||identity==null||box==null){error("Abre un PDF, elige un certificado y dibuja el recuadro de firma.");return;}
         Placement placement;
         try{placement=new Placement(page,box[0],box[1],box[2],box[3]);}catch(IllegalArgumentException e){error(e.getMessage());return;}
-        Identity selected=identity;File source=input;
+        Identity selected=identity;File source=input;String sourceName=originalName;
         new AlertDialog.Builder(this).setTitle("Autorizar firma").setMessage("Vas a firmar el PDF con:\n"+selected.description()+"\n\nSe creará una copia. La fecha procede del dispositivo; no es un sello de tiempo.")
             .setNegativeButton("Cancelar",null).setPositiveButton("Firmar",(d,w)->work("Firmando y comprobando integridad…",()->{
                 File folder=new File(getCacheDir(),"signed");if(!folder.isDirectory()&&!folder.mkdirs())throw new IOException("No se pudo crear la carpeta de salida.");
                 File result=new File(folder,"firmado-"+UUID.randomUUID()+".pdf");PdfEngine.sign(source,result,placement,selected);return result;
-            },result->{if(signed!=null)signed.delete();signed=result;
+            },result->{if(signed!=null)signed.delete();signed=result;signedName=sourceName.replaceFirst("(?i)\\.pdf$","")+"_firmado.pdf";
                 new AlertDialog.Builder(this).setTitle("PDF firmado").setMessage(PdfEngine.VERIFICATION_NOTICE)
                     .setPositiveButton("Guardar copia",(dialog,which)->savePicker()).setNeutralButton("Compartir",(dialog,which)->share()).setNegativeButton("Cerrar",null).show();
                 status.setText("PDF firmado. Puedes guardar o compartir la última copia.");
             })).show();
     }
-    private void savePicker(){Intent intent=new Intent(Intent.ACTION_CREATE_DOCUMENT);intent.addCategory(Intent.CATEGORY_OPENABLE);intent.setType("application/pdf");intent.putExtra(Intent.EXTRA_TITLE,originalName.replaceFirst("(?i)\\.pdf$","")+"_firmado.pdf");startActivityForResult(intent,SAVE_PDF);}
+    private void savePicker(){Intent intent=new Intent(Intent.ACTION_CREATE_DOCUMENT);intent.addCategory(Intent.CATEGORY_OPENABLE);intent.setType("application/pdf");intent.putExtra(Intent.EXTRA_TITLE,signedName);startActivityForResult(intent,SAVE_PDF);}
     private void export(Uri uri){File result=signed;if(result==null){error("La copia temporal ya no está disponible. Vuelve a firmar el documento.");return;}
         work("Guardando copia…",()->{try(InputStream in=new FileInputStream(result);OutputStream out=getContentResolver().openOutputStream(uri,"wt")){if(out==null)throw new IOException("No se pudo abrir el destino.");copy(in,out,Long.MAX_VALUE);}return true;},done->new AlertDialog.Builder(this).setTitle("Copia guardada").setMessage("El PDF firmado se ha guardado en la ubicación elegida.").setPositiveButton("Aceptar",null).setNeutralButton("Compartir",(d,w)->share()).show());
     }

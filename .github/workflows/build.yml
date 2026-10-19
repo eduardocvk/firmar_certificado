@@ -7,6 +7,9 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   windows:
     runs-on: windows-latest
@@ -44,6 +47,10 @@ jobs:
           distribution: temurin
           java-version: '17'
       - uses: android-actions/setup-android@v3
+        with:
+          cmdline-tools-version: '13114758'
+          packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
+          log-accepted-android-sdk-licenses: false
       - uses: gradle/actions/setup-gradle@v4
       - name: Compilar APK y análisis estático
         run: bash ./gradlew -PwithAndroid=true :android:assembleDebug :android:assembleAndroidTest :android:lintDebug --no-daemon
@@ -65,6 +72,10 @@ jobs:
           distribution: temurin
           java-version: '17'
       - uses: android-actions/setup-android@v3
+        with:
+          cmdline-tools-version: '13114758'
+          packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
+          log-accepted-android-sdk-licenses: false
       - uses: gradle/actions/setup-gradle@v4
       - name: Permitir aceleración del emulador
         run: |
@@ -75,6 +86,7 @@ jobs:
         with:
           api-level: 35
           arch: x86_64
+          target: google_apis
           disable-animations: true
           script: bash ./gradlew -PwithAndroid=true :android:connectedDebugAndroidTest --no-daemon
       - uses: actions/upload-artifact@v4

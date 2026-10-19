@@ -21,8 +21,9 @@ public final class PdfSelectionView extends View {
             public boolean onScale(ScaleGestureDetector detector) {
                 float old=zoom; zoom=Math.max(1,Math.min(5,zoom*detector.getScaleFactor()));
                 float ratio=zoom/old;
-                offsetX=detector.getFocusX()-(detector.getFocusX()-offsetX)*ratio;
-                offsetY=detector.getFocusY()-(detector.getFocusY()-offsetY)*ratio;
+                float focusX=detector.getFocusX()-getWidth()/2f,focusY=detector.getFocusY()-getHeight()/2f;
+                offsetX=focusX-(focusX-offsetX)*ratio;
+                offsetY=focusY-(focusY-offsetY)*ratio;
                 invalidate(); return true;
             }
         });

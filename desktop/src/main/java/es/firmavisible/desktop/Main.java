@@ -140,7 +140,9 @@ public final class Main extends JFrame {
     private void sign() {
         Identity identity=(Identity)identities.getSelectedItem();
         if(snapshot==null || preview.box==null || identity==null) { JOptionPane.showMessageDialog(this,"Abre un PDF, selecciona un certificado y dibuja el recuadro.");return; }
-        float[] b=preview.box; Placement placement=new Placement(page,b[0],b[1],b[2],b[3]);
+        float[] b=preview.box; Placement placement;
+        try { placement=new Placement(page,b[0],b[1],b[2],b[3]); }
+        catch(IllegalArgumentException e) { JOptionPane.showMessageDialog(this,e.getMessage());return; }
         JFileChooser chooser=new JFileChooser(); chooser.setDialogTitle("Guardar PDF firmado");
         chooser.setSelectedFile(new File(original.getParentFile(),original.getName().replaceFirst("(?i)\\.pdf$","")+"_firmado.pdf"));
         if(chooser.showSaveDialog(this)!=JFileChooser.APPROVE_OPTION)return;
