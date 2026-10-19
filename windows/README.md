@@ -34,6 +34,12 @@ La futura distribución por Store requiere declarar su asociación de archivos e
 
 El código no exporta las claves del almacén para firmar. Las consultas de cadena que se usan para incorporar certificados públicos desactivan descargas y revocación, por lo que **no se presentan como validación de confianza**. La copia especial para renderizar formularios se aplana exclusivamente para visualización: nunca se firma, comprueba ni exporta.
 
+## Certificado recordado y avisos
+
+Tras una firma correcta se guarda únicamente la huella SHA-256 del certificado. Al iniciar, se recupera del almacén de Windows si conserva clave privada, está vigente y permite firmar. Si falta, no se sustituye por otro; selecciona uno manualmente. Para un .p12/.pfx que no está en el almacén, sigue siendo necesario abrir el archivo con su contraseña. **Olvidar** elimina la referencia recordada.
+
+En **Opciones de firma** puedes desmarcar **Confirmar antes de firmar** y **Mostrar aviso al terminar**, o usar las casillas «No volver a mostrar» de los propios diálogos. Las opciones son independientes y se guardan. El resultado, el archivo y su hora permanecen visibles en la ventana; los errores siguen mostrándose. Se mantiene el selector de destino para evitar sobrescribir el original.
+
 ## Firma y límites
 
 `ETSI.CAdES.detached`, SHA-256, certificado firmante y cadena disponible, `SigningCertificateV2`, apariencia incorporada y guardado incremental. Se comprueban todas las firmas antes y después de añadir otra. Se rechazan PDF cifrados, XFA, DocMDP y campos con bloqueo, o documentos con bytes posteriores a la última firma.

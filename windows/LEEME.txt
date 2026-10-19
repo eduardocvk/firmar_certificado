@@ -22,6 +22,13 @@ Si mueves la carpeta, activa el menú de nuevo desde la nueva ubicación.
 5. Coloca el recuadro y ajusta página, posición y tamaño. Firma y guarda con nombre nuevo.
 6. Abre la copia en Adobe Reader y revisa su panel de firmas.
 
+ÚLTIMO CERTIFICADO Y AVISOS
+Se preselecciona el último certificado usado si está instalado y vigente en Windows.
+Solo se guarda su huella. Los .p12/.pfx no instalados requieren abrirlos con contraseña.
+En Opciones de firma puedes quitar la confirmación previa y el aviso de éxito.
+También hay una casilla para no volver a mostrar en los propios avisos.
+El resultado sigue visible en la ventana. Los errores se muestran y el destino se sigue eligiendo.
+
 La fecha visible procede del ordenador. La hora acreditada por el sello aparece en la confirmación y en el PDF.
 Se comprueba integridad criptográfica; no se comprueban confianza del firmante, revocación ni cualificación.
 Sin evidencias LT/LTA ni declaración de firma/sello cualificado. Usa primero un PDF de prueba.

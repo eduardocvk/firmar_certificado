@@ -1,3 +1,12 @@
+FirmaPDF Windows 0.3.4: ventana maximizada, último certificado y avisos configurables.
+
+- Corregidos los límites de ventana que dejaban espacio negro al maximizar. Windows gestiona el tamaño de la ventana maximizada.
+- Se recuerda el certificado de la última firma completada y se preselecciona al iniciar si está disponible y vigente en el almacén de Windows. Solo se guarda su huella SHA-256; «Olvidar» elimina esa referencia.
+- Los .p12/.pfx siguen requiriendo abrirlos con contraseña cuando no están instalados en Windows. No se guarda su clave ni contraseña.
+- Opciones independientes para confirmar antes de firmar y mostrar el aviso de éxito. Puedes desactivarlas en «Opciones de firma» o marcar «No volver a mostrar» en los propios avisos.
+- El archivo y la hora del resultado permanecen visibles en la ventana, con botón para abrir la copia. Los errores siguen avisándose y el destino se sigue eligiendo al guardar.
+- El diseño, tamaño del texto, sello y las nuevas preferencias se conservan al actualizar.
+
 FirmaPDF Windows 0.3.3: abrir PDF desde el menú del botón derecho.
 
 - «Firmar con FirmaPDF» abre el PDF seleccionado para elegir certificado y colocar la firma.

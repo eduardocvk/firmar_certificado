@@ -23,20 +23,36 @@ public partial class MainWindow : Window
     private double baseWidth = 800;
     private double pageWidth = 600, pageHeight = 800;
     private readonly UserPreferencesStore preferencesStore;
+    private readonly Func<string, CertificateIdentity?> identityLookup;
     private UserPreferences preferences = UserPreferences.Default();
     private bool initialized;
     private string? lastSigned;
 
     public MainWindow() : this(new UserPreferencesStore()) { }
-    public MainWindow(UserPreferencesStore store)
+    public MainWindow(UserPreferencesStore store, Func<string, CertificateIdentity?>? identityLookup = null)
     {
+        this.identityLookup = identityLookup ?? CertificateIdentity.FindInWindowsStore;
         preferencesStore = store; InitializeComponent(); Directory.CreateDirectory(session);
-        MaxHeight = SystemParameters.WorkArea.Height; MaxWidth = SystemParameters.WorkArea.Width;
+        // Limit only the initial restored size. Windows controls maximized bounds, including frame and DPI.
+        Height = Math.Min(Height, SystemParameters.WorkArea.Height); Width = Math.Min(Width, SystemParameters.WorkArea.Width);
         try { preferences = store.Load(); }
         catch (Exception ex) { StatusLabel.Text = $"No se pudo cargar el diseño guardado: {ex.Message} El archivo se conserva; puedes crear otro diseño."; }
-        TimestampCheck.IsChecked = preferences.UseTimestamp; initialized = true; UpdateDesignPreview();
+        TimestampCheck.IsChecked = preferences.UseTimestamp;
+        ConfirmBeforeCheck.IsChecked = preferences.ConfirmBeforeSigning; SuccessDialogCheck.IsChecked = preferences.ShowSuccessDialog;
+        initialized = true; UpdateDesignPreview();
     }
     private CertificateIdentity? Identity => CertificateCombo.SelectedItem as CertificateIdentity;
+
+    public async Task RestoreLastIdentityAsync()
+    {
+        if (preferences.LastIdentityFingerprint is not { } fingerprint) return;
+        await WorkAsync("Recuperando el último certificado…", async () =>
+        {
+            var identity = await Task.Run(() => identityLookup(fingerprint));
+            if (identity is not null) { SetIdentities([identity]); StatusLabel.Text = "Último certificado utilizado preseleccionado."; }
+            else StatusLabel.Text = "El último certificado no está disponible en Windows. Selecciónalo o abre tu .p12/.pfx.";
+        });
+    }
 
     private async Task WorkAsync(string message, Func<Task> work)
     {
@@ -113,7 +129,9 @@ public partial class MainWindow : Window
 
     private void SetIdentities(IEnumerable<CertificateIdentity> values)
     {
-        ForgetIdentities(); identities.AddRange(values); CertificateCombo.ItemsSource = identities.ToArray(); CertificateCombo.SelectedIndex = identities.Count == 0 ? -1 : 0;
+        ForgetIdentities(); identities.AddRange(values); CertificateCombo.ItemsSource = identities.ToArray();
+        int remembered = identities.FindIndex(i => string.Equals(i.Fingerprint, preferences.LastIdentityFingerprint, StringComparison.OrdinalIgnoreCase));
+        CertificateCombo.SelectedIndex = identities.Count == 0 ? -1 : Math.Max(0, remembered);
     }
     private async void StoreClick(object sender, RoutedEventArgs e) => await WorkAsync("Leyendo certificados de Windows…", async () =>
     {
@@ -142,7 +160,12 @@ public partial class MainWindow : Window
 
     private void IdentityClick(object sender, RoutedEventArgs e) { if (Identity is { } identity) MessageBox.Show(this, identity.Details, "Identidad seleccionada"); }
     private void CertificateChanged(object sender, SelectionChangedEventArgs e) { if (initialized) UpdateDesignPreview(); }
-    private void ForgetClick(object sender, RoutedEventArgs e) => ForgetIdentities();
+    private async void ForgetClick(object sender, RoutedEventArgs e)
+    {
+        ForgetIdentities();
+        var next = preferences with { LastIdentityFingerprint = null };
+        await WorkAsync("Olvidando certificado…", async () => { await Task.Run(() => preferencesStore.Save(next)); preferences = next; StatusLabel.Text = "Certificado olvidado. No se preseleccionará al iniciar."; });
+    }
     private void ForgetIdentities() { CertificateCombo.ItemsSource = null; foreach (var identity in identities) identity.Dispose(); identities.Clear(); }
 
     private async void SignClick(object sender, RoutedEventArgs e)
@@ -153,17 +176,41 @@ public partial class MainWindow : Window
         var picker = new SaveFileDialog { Filter = "Documento PDF|*.pdf", DefaultExt = ".pdf", AddExtension = true, Title = "Guardar copia firmada", FileName = Path.GetFileNameWithoutExtension(originalPath) + "_firmado.pdf", InitialDirectory = Path.GetDirectoryName(originalPath), OverwritePrompt = false };
         if (picker.ShowDialog(this) != true) return;
         if (File.Exists(picker.FileName)) { MessageBox.Show(this, "Ese archivo ya existe. Elige un nombre nuevo para conservarlo."); return; }
+        await SignDocumentAsync(picker.FileName, placement);
+    }
+
+    public async Task SignDocumentAsync(string destination, Placement placement)
+    {
+        if (input is null || Identity is not { } identity) throw new InvalidOperationException("Abre un PDF y elige un certificado.");
         bool timestamp = TimestampCheck.IsChecked == true; var design = preferences.Design;
         string timeNotice = timestamp ? "Se solicitará un sello de tiempo a DigiCert enviando solo la huella de la firma, sin el PDF ni tus claves. Si falla, no se guardará una copia sin sello." : "Sin sello de tiempo. La fecha procede del ordenador.";
-        if (MessageBox.Show(this, $"Vas a firmar el PDF con:\n\n{identity.Details}\n\nSe creará una copia con tu diseño.\n{timeNotice}", "Autorizar firma", MessageBoxButton.OKCancel, MessageBoxImage.Information) != MessageBoxResult.OK) return;
+        if (preferences.ConfirmBeforeSigning)
+        {
+            var notice = new SigningNotice(this, "Autorizar firma", $"Vas a firmar el PDF con:\n\n{identity.Details}\n\nSe creará una copia con tu diseño.\n{timeNotice}", true);
+            if (notice.ShowDialog() != true) return;
+            if (notice.DoNotShowAgain)
+            {
+                preferences = preferences with { ConfirmBeforeSigning = false }; RefreshDialogChecks();
+                try { preferencesStore.Save(preferences); }
+                catch (Exception ex) { StatusLabel.Text = $"La opción se aplica en esta sesión, pero no se pudo guardar: {ex.Message}"; }
+            }
+        }
         string source = input;
         await WorkAsync("Firmando y comprobando integridad…", async () =>
         {
-            var result = await Task.Run(() => { PdfEngine.Sign(source, picker.FileName, placement, identity, design, timestamp ? TimestampClient.DigiCert() : null); return PdfEngine.Verify(picker.FileName); });
-            lastSigned = picker.FileName; LastSignedButton.IsEnabled = true; LastSignedButton.Visibility = Visibility.Visible;
-            StatusLabel.Text = $"Copia firmada: {picker.FileName}";
+            var result = await Task.Run(() => { PdfEngine.Sign(source, destination, placement, identity, design, timestamp ? TimestampClient.DigiCert() : null); return PdfEngine.Verify(destination); });
+            lastSigned = destination; LastSignedButton.IsEnabled = true; LastSignedButton.Visibility = Visibility.Visible;
             string date = result.LatestTimestamp is { } time ? $"Hora acreditada por el sello: {time.ToLocalTime():dd/MM/yyyy HH:mm:ss zzz}" : "Sin sello de tiempo. Fecha declarada del ordenador.";
-            MessageBox.Show(this, $"Guardado en:\n{picker.FileName}\n\n{date}\n\n{PdfEngine.VerificationNotice}\nConsulta la confianza completa en tu visor habitual.", "PDF firmado", MessageBoxButton.OK, MessageBoxImage.Information);
+            StatusLabel.Text = $"PDF firmado y guardado en {destination}\n{date}";
+            preferences = preferences with { LastIdentityFingerprint = identity.Fingerprint };
+            if (preferences.ShowSuccessDialog)
+            {
+                var notice = new SigningNotice(this, "PDF firmado", $"Guardado en:\n{destination}\n\n{date}\n\n{PdfEngine.VerificationNotice}\nConsulta la confianza completa en tu visor habitual.", false);
+                notice.ShowDialog();
+                if (notice.DoNotShowAgain) { preferences = preferences with { ShowSuccessDialog = false }; RefreshDialogChecks(); }
+            }
+            try { var saved = preferences; await Task.Run(() => preferencesStore.Save(saved)); }
+            catch (Exception ex) { StatusLabel.Text += $"\nEl PDF está firmado, pero no se pudieron guardar las preferencias: {ex.Message}"; }
         });
     }
 
@@ -182,7 +229,7 @@ public partial class MainWindow : Window
     {
         var editor = new AppearanceEditor(preferences.Design, Identity?.Name ?? "Tu nombre y apellidos", IssuerName) { Owner = this };
         if (editor.ShowDialog() != true || editor.Result is not { } design) return;
-        var next = new UserPreferences(design, TimestampCheck.IsChecked == true);
+        var next = preferences with { Design = design, UseTimestamp = TimestampCheck.IsChecked == true };
         await WorkAsync("Guardando tu diseño…", async () =>
         {
             await Task.Run(() => preferencesStore.Save(next)); preferences = next; UpdateDesignPreview(); StatusLabel.Text = "Diseño guardado en tu perfil de Windows. Se reutilizará al abrir de nuevo la app.";
@@ -191,9 +238,22 @@ public partial class MainWindow : Window
     private async void TimestampChanged(object sender, RoutedEventArgs e)
     {
         if (!initialized || busy) return;
-        var next = new UserPreferences(preferences.Design, TimestampCheck.IsChecked == true);
+        var next = preferences with { UseTimestamp = TimestampCheck.IsChecked == true };
         await WorkAsync("Guardando preferencia de sellado…", async () => { await Task.Run(() => preferencesStore.Save(next)); preferences = next; StatusLabel.Text = next.UseTimestamp ? "Sello de tiempo activado. Requiere Internet; solo se envía una huella de la firma." : "Sello desactivado. Puedes firmar sin conexión con la fecha del ordenador."; });
         initialized = false; TimestampCheck.IsChecked = preferences.UseTimestamp; initialized = true;
+    }
+    private void RefreshDialogChecks()
+    {
+        initialized = false;
+        ConfirmBeforeCheck.IsChecked = preferences.ConfirmBeforeSigning; SuccessDialogCheck.IsChecked = preferences.ShowSuccessDialog;
+        initialized = true;
+    }
+    private async void DialogPreferenceChanged(object sender, RoutedEventArgs e)
+    {
+        if (!initialized || busy) return;
+        var next = preferences with { ConfirmBeforeSigning = ConfirmBeforeCheck.IsChecked == true, ShowSuccessDialog = SuccessDialogCheck.IsChecked == true };
+        await WorkAsync("Guardando opciones de firma…", async () => { await Task.Run(() => preferencesStore.Save(next)); preferences = next; StatusLabel.Text = "Opciones guardadas. El resultado de la firma siempre se muestra en la ventana."; });
+        RefreshDialogChecks();
     }
     private string IssuerName => Identity?.Certificate.GetNameInfo(System.Security.Cryptography.X509Certificates.X509NameType.SimpleName, true) ?? "Emisor del certificado";
     private void UpdateDesignPreview()
@@ -203,7 +263,7 @@ public partial class MainWindow : Window
     }
     private void AboutClick(object sender, RoutedEventArgs e)
     {
-        if (MessageBox.Show(this, "FirmaPDF 0.3.3 · C#/.NET y WPF\n\nMotor PDF: iText Community, Copyright Apryse Group NV.\nEsta aplicación Windows se distribuye bajo AGPL-3.0-or-later, sin garantía.\nFuente Noto Sans: SIL Open Font License 1.1.\n\nEl código fuente y las instrucciones completas están disponibles en GitHub. ¿Abrirlos?", "Código fuente y licencias", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+        if (MessageBox.Show(this, "FirmaPDF 0.3.4 · C#/.NET y WPF\n\nMotor PDF: iText Community, Copyright Apryse Group NV.\nEsta aplicación Windows se distribuye bajo AGPL-3.0-or-later, sin garantía.\nFuente Noto Sans: SIL Open Font License 1.1.\n\nEl código fuente y las instrucciones completas están disponibles en GitHub. ¿Abrirlos?", "Código fuente y licencias", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
             Process.Start(new ProcessStartInfo("https://github.com/eduardocvk/firmar_certificado/tree/main/windows") { UseShellExecute = true });
     }
 

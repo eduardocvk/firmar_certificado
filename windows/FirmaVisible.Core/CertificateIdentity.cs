@@ -7,6 +7,7 @@ public sealed class CertificateIdentity : IDisposable
 {
     public X509Certificate2 Certificate { get; }
     public string Name => Certificate.GetNameInfo(X509NameType.SimpleName, false);
+    public string Fingerprint => Certificate.GetCertHashString(HashAlgorithmName.SHA256);
     public string Description => $"{Name} · caduca {Certificate.NotAfter:dd/MM/yyyy}";
     public string Details => $"{Description}\nEmisor: {Certificate.GetNameInfo(X509NameType.SimpleName, true)}\nHuella SHA-256: {Certificate.GetCertHashString(HashAlgorithmName.SHA256)}";
     private readonly IReadOnlyList<X509Certificate2> suppliedChain;
@@ -61,6 +62,24 @@ public sealed class CertificateIdentity : IDisposable
         }
         if (result.Count == 0) throw new CryptographicException("No se encontraron certificados con clave privada en tu almacén de Windows.");
         return result.OrderBy(c => c.Name).ThenByDescending(c => c.Certificate.NotAfter).ToList();
+    }
+
+    public static CertificateIdentity? FindInWindowsStore(string fingerprint)
+    {
+        using var store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
+        store.Open(OpenFlags.ReadOnly | OpenFlags.OpenExistingOnly);
+        CertificateIdentity? found = null;
+        foreach (var cert in store.Certificates)
+        {
+            if (found is null && cert.HasPrivateKey && string.Equals(cert.GetCertHashString(HashAlgorithmName.SHA256), fingerprint, StringComparison.OrdinalIgnoreCase))
+            {
+                var candidate = new CertificateIdentity(cert);
+                try { candidate.CheckUsable(); found = candidate; }
+                catch (CryptographicException) { candidate.Dispose(); }
+            }
+            else cert.Dispose();
+        }
+        return found;
     }
 
     public static List<CertificateIdentity> FromPkcs12(string path, ReadOnlySpan<char> password)

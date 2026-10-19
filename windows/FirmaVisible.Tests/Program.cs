@@ -189,5 +189,6 @@ internal static class Program
         SaveImage(editorBitmap,Path.Combine(root,"windows-appearance-editor.png")); editor.Close();
         Check(true,"Editor WPF renderizado.");
         ExplorerFeatures.Run(root, Check, Refuses);
+        PreferencesFeatures.Run(root, Check);
     }
 }

@@ -26,8 +26,8 @@ public partial class App : Application
         {
             try
             {
-                var window = new MainWindow();
-                window.Close();
+                var smokeWindow = new MainWindow();
+                smokeWindow.Close();
                 Shutdown(0);
             }
             catch (Exception ex)
@@ -38,13 +38,18 @@ public partial class App : Application
             return;
         }
         base.OnStartup(e);
-        MainWindow = new MainWindow();
+        var window = new MainWindow(); MainWindow = window;
+        string? path = null;
         try
         {
-            string? path = LaunchDocument.Parse(e.Args);
-            if (path is not null) MainWindow.Loaded += async (_, _) => await ((MainWindow)MainWindow).OpenDocumentAsync(path);
+            path = LaunchDocument.Parse(e.Args);
         }
         catch (Exception ex) { MessageBox.Show(ex.Message, "No se pudo abrir el PDF"); }
-        MainWindow.Show();
+        window.Loaded += async (_, _) =>
+        {
+            await window.RestoreLastIdentityAsync();
+            if (path is not null) await window.OpenDocumentAsync(path);
+        };
+        window.Show();
     }
 }

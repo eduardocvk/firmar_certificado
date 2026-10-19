@@ -3,7 +3,7 @@
     <Nullable>enable</Nullable>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Version>0.3.3</Version>
+    <Version>0.3.4</Version>
     <Authors>FirmaPDF</Authors>
     <Company>FirmaPDF</Company>
     <Copyright>Copyright © 2026 FirmaPDF contributors</Copyright>
