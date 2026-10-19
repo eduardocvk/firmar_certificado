@@ -1,0 +1,17 @@
+plugins { id 'application' }
+application { mainClass = 'es.firmavisible.desktop.Main' }
+dependencies { implementation project(':pdf') }
+tasks.register('packageWindows', Exec) {
+    dependsOn installDist
+    onlyIf { System.getProperty('os.name').toLowerCase().contains('windows') }
+    def jdk = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(17) }
+    doFirst {
+        commandLine jdk.get().metadata.installationPath.file('bin/jpackage.exe').asFile,
+            '--type', 'app-image', '--name', 'FirmaVisible', '--app-version', project.version,
+            '--input', layout.buildDirectory.dir('install/desktop/lib').get().asFile,
+            '--main-jar', "desktop-${project.version}.jar", '--main-class', application.mainClass.get(),
+            '--dest', layout.buildDirectory.dir('windows').get().asFile,
+            '--vendor', 'FirmaVisible', '--description', 'Firma local de PDF con certificado y apariencia visible',
+            '--java-options', '-Xmx1024m'
+    }
+}

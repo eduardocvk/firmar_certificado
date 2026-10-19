@@ -1,0 +1,84 @@
+name: Compilar y comprobar
+on:
+  push:
+    branches: [main, 'codex/**']
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Pruebas y aplicación portable con Java incluido
+        shell: pwsh
+        run: ./gradlew.bat :pdf:test :desktop:packageWindows --no-daemon
+      - name: Verificación CMS independiente con OpenSSL
+        shell: pwsh
+        run: ./scripts/verify-openssl.ps1
+      - name: Comprimir aplicación
+        shell: pwsh
+        run: Compress-Archive -Path desktop/build/windows/FirmaVisible -DestinationPath FirmaVisible-Windows.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FirmaVisible-Windows
+          path: FirmaVisible-Windows.zip
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pruebas-windows
+          path: pdf/build/reports/tests/
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Compilar APK y análisis estático
+        run: bash ./gradlew -PwithAndroid=true :android:assembleDebug :android:assembleAndroidTest :android:lintDebug --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FirmaVisible-Android-pruebas
+          path: android/build/outputs/apk/debug/*.apk
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: analisis-android
+          path: android/build/reports/lint-results-debug.html
+  android-device:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Permitir aceleración del emulador
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          disable-animations: true
+          script: bash ./gradlew -PwithAndroid=true :android:connectedDebugAndroidTest --no-daemon
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pruebas-emulador-android
+          path: android/build/reports/androidTests/

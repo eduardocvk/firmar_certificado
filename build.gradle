@@ -1,0 +1,13 @@
+allprojects {
+    group = 'es.firmavisible'
+    version = '0.1.0'
+    repositories { google(); mavenCentral() }
+}
+subprojects {
+    plugins.withId('java') {
+        java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }
+        tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8'; options.release = 11 }
+        tasks.withType(Test).configureEach { useJUnitPlatform() }
+        dependencies { testImplementation 'org.junit.jupiter:junit-jupiter:5.12.2'; testRuntimeOnly 'org.junit.platform:junit-platform-launcher' }
+    }
+}

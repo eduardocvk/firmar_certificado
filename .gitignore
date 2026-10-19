@@ -1,0 +1,12 @@
+.tools/
+.gradle/
+**/build/
+local.properties
+.idea/
+*.iml
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.pdf
+!**/src/test/resources/*.pdf

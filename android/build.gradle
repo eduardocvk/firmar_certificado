@@ -1,0 +1,37 @@
+plugins { id 'com.android.application' version '8.9.2' }
+
+android {
+    namespace 'es.firmavisible.android'
+    compileSdk 35
+    defaultConfig {
+        applicationId 'es.firmavisible.android'
+        minSdk 26
+        targetSdk 35
+        versionCode 1
+        versionName '0.1.0'
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+    }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_11; targetCompatibility JavaVersion.VERSION_11 }
+    sourceSets.main.java.srcDir layout.buildDirectory.dir('generated/pdf')
+    packaging { resources.excludes += ['META-INF/versions/**', 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'META-INF/DEPENDENCIES', 'META-INF/LICENSE*', 'META-INF/NOTICE*', 'META-INF/INDEX.LIST'] }
+    buildTypes { release { minifyEnabled false } }
+    lint { abortOnError true }
+}
+
+// PDFBox Android is an API-compatible port. Keep the signing algorithm in one source.
+tasks.register('generatePdfEngine', Copy) {
+    from '../pdf/src/main/java'
+    into layout.buildDirectory.dir('generated/pdf')
+    filter { line -> line.replace('org.apache.pdfbox', 'com.tom_roush.pdfbox') }
+    filteringCharset = 'UTF-8'
+}
+tasks.named('preBuild').configure { dependsOn 'generatePdfEngine' }
+dependencies {
+    implementation project(':core')
+    implementation('com.tom-roush:pdfbox-android:2.0.27.0') {
+        exclude group: 'org.bouncycastle'
+    }
+    implementation 'androidx.core:core:1.15.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test:runner:1.6.2'
+}
