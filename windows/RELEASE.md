@@ -1,3 +1,11 @@
+FirmaPDF Windows 0.3.3: abrir PDF desde el menú del botón derecho.
+
+- «Firmar con FirmaPDF» abre el PDF seleccionado para elegir certificado y colocar la firma.
+- Activar y quitar desde «Menú del botón derecho…» en FirmaPDF. Sin administrador y sin cambiar el lector habitual.
+- En Windows 11: botón derecho → Mostrar más opciones → Firmar con FirmaPDF.
+- Funciona con espacios y acentos. Conserva la carpeta; si la mueves, vuelve a activar el menú desde la nueva ubicación.
+- La apertura trabaja en una copia y no firma automáticamente.
+
 FirmaPDF Windows 0.3.2: fondo transparente y tamaño del texto configurable.
 
 - Texto de 4 a 18 pt, con vista previa; 8 pt por defecto y reducción para caber sin recortar.

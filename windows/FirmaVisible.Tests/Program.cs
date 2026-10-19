@@ -175,7 +175,7 @@ internal static class Program
     }
     private static void RenderInterface()
     {
-        var app = new FirmaVisible.App.App(); app.InitializeComponent();
+        var app = new FirmaVisible.App.App(startWindow: false); app.InitializeComponent(); app.ShutdownMode = ShutdownMode.OnExplicitShutdown;
         var window = new MainWindow(new UserPreferencesStore(Path.Combine(root,"ui-preferences")));
         var content = (FrameworkElement)window.Content;
         content.Measure(new Size(1220,800)); content.Arrange(new WpfRectangle(0,0,1220,800)); content.UpdateLayout();
@@ -188,5 +188,6 @@ internal static class Program
         var editorBitmap = new RenderTargetBitmap(724,700,96,96,PixelFormats.Pbgra32); editorBitmap.Render(editorContent);
         SaveImage(editorBitmap,Path.Combine(root,"windows-appearance-editor.png")); editor.Close();
         Check(true,"Editor WPF renderizado.");
+        ExplorerFeatures.Run(root, Check, Refuses);
     }
 }

@@ -51,19 +51,45 @@ public partial class MainWindow : Window
     {
         var picker = new OpenFileDialog { Filter = "Documento PDF|*.pdf", Title = "Abrir PDF" };
         if (picker.ShowDialog(this) != true) return;
+        await OpenDocumentAsync(picker.FileName);
+    }
+
+    public async Task OpenDocumentAsync(string path)
+    {
         await WorkAsync("Abriendo documento…", async () =>
         {
+            path = LaunchDocument.Validate(path);
             string copy = Path.Combine(session, $"original-{Guid.NewGuid():N}.pdf");
             string preview;
             try
             {
-                preview = await Task.Run(() => { File.Copy(picker.FileName, copy); return PdfEngine.PreparePreview(copy, session); });
+                preview = await Task.Run(() => { File.Copy(path, copy); return PdfEngine.PreparePreview(copy, session); });
                 var rendered = await PdfPreview.RenderAsync(preview, 0);
-                DeleteDocumentCopies(); input = copy; displayInput = preview; originalPath = picker.FileName; page = 0;
+                DeleteDocumentCopies(); input = copy; displayInput = preview; originalPath = path; page = 0;
                 DocumentLabel.Text = Path.GetFileName(originalPath); ShowPage(rendered);
             }
             catch { if (File.Exists(copy)) File.Delete(copy); throw; }
         });
+    }
+
+    private void ExplorerClick(object sender, RoutedEventArgs e)
+    {
+        var integration = ExplorerIntegration.ForCurrentUser();
+        string executable = ExplorerIntegration.ExecutablePath;
+        var info = new TextBlock { Text = "Añade «Firmar con FirmaPDF» al botón derecho de los PDF para abrirlos directamente aquí.\n\nEn Windows 11 está en «Mostrar más opciones». No cambia tu lector habitual ni requiere administrador.\n\nConserva esta carpeta. Si la mueves, activa de nuevo el menú desde la nueva ubicación.", TextWrapping = TextWrapping.Wrap, Margin = new Thickness(20, 16, 20, 12), MaxWidth = 430 };
+        var status = new TextBlock { Margin = new Thickness(20, 0, 20, 12), TextWrapping = TextWrapping.Wrap };
+        void Refresh() => status.Text = integration.IsRegisteredFor(executable) ? "Menú activado para esta copia de FirmaPDF." : "Menú no activado para esta copia.";
+        var add = new Button { Content = "Activar menú", Margin = new Thickness(20, 4, 20, 4) };
+        var remove = new Button { Content = "Quitar menú", Margin = new Thickness(20, 4, 20, 4) };
+        var close = new Button { Content = "Cerrar", IsCancel = true, Margin = new Thickness(20, 4, 20, 16) };
+        var content = new StackPanel(); content.Children.Add(info); content.Children.Add(status); content.Children.Add(add); content.Children.Add(remove); content.Children.Add(close);
+        var dialog = new Window { Owner = this, Title = "Menú del botón derecho", Content = content, SizeToContent = SizeToContent.WidthAndHeight, ResizeMode = ResizeMode.NoResize, WindowStartupLocation = WindowStartupLocation.CenterOwner };
+        void Change(Action action) { try { action(); Refresh(); } catch (Exception ex) { status.Text = ex.Message; } }
+        add.Click += (_, _) => Change(() => integration.Register(executable));
+        remove.Click += (_, _) => Change(() => integration.Remove(executable));
+        close.Click += (_, _) => dialog.Close();
+        try { Refresh(); } catch (Exception ex) { status.Text = ex.Message; }
+        dialog.ShowDialog();
     }
 
     private void ShowPage(RenderedPage rendered)
@@ -177,7 +203,7 @@ public partial class MainWindow : Window
     }
     private void AboutClick(object sender, RoutedEventArgs e)
     {
-        if (MessageBox.Show(this, "FirmaPDF 0.3.2 · C#/.NET y WPF\n\nMotor PDF: iText Community, Copyright Apryse Group NV.\nEsta aplicación Windows se distribuye bajo AGPL-3.0-or-later, sin garantía.\nFuente Noto Sans: SIL Open Font License 1.1.\n\nEl código fuente y las instrucciones completas están disponibles en GitHub. ¿Abrirlos?", "Código fuente y licencias", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+        if (MessageBox.Show(this, "FirmaPDF 0.3.3 · C#/.NET y WPF\n\nMotor PDF: iText Community, Copyright Apryse Group NV.\nEsta aplicación Windows se distribuye bajo AGPL-3.0-or-later, sin garantía.\nFuente Noto Sans: SIL Open Font License 1.1.\n\nEl código fuente y las instrucciones completas están disponibles en GitHub. ¿Abrirlos?", "Código fuente y licencias", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
             Process.Start(new ProcessStartInfo("https://github.com/eduardocvk/firmar_certificado/tree/main/windows") { UseShellExecute = true });
     }
 

@@ -2,7 +2,7 @@
 
 Aplicaciones locales para **Windows 10/11 x64** y **Android 8 o posterior** que firman PDF con certificado digital y permiten elegir la posición de su apariencia visible.
 
-**Windows 0.3.2 en C#/.NET; Android 0.2.2. Versiones de pruebas.** Implementa firma con certificado y comprobación criptográfica, no una certificación jurídica del documento. El usuario confirmó que Android firma correctamente con su certificado en la versión anterior; las nuevas funciones y la versión Windows necesitan su comprobación manual con FNMT. Conviene empezar con un PDF de prueba y comprobar el resultado en Adobe Reader y en el sistema al que se enviará.
+**Windows 0.3.3 en C#/.NET; Android 0.2.2. Versiones de pruebas.** Implementa firma con certificado y comprobación criptográfica, no una certificación jurídica del documento. El usuario confirmó que Android firma correctamente con su certificado en la versión anterior; las nuevas funciones y la versión Windows necesitan su comprobación manual con FNMT. Conviene empezar con un PDF de prueba y comprobar el resultado en Adobe Reader y en el sistema al que se enviará.
 
 El nombre anterior era FirmaVisible. Se mantienen el identificador Android y la carpeta de preferencias Windows para conservar los diseños guardados. Los paquetes de versiones anteriores conservan sus nombres originales.
 
@@ -29,6 +29,8 @@ Los artefactos de Actions requieren iniciar sesión en GitHub y caducan según s
 4. Personaliza texto e imagen, ajusta el texto entre 4 y 18 pt, guarda tu diseño y activa o desactiva **Sello de tiempo**. El diseño y esa preferencia permanecen en el perfil de Windows, sin certificado ni contraseña.
 5. Pulsa **Firmar y guardar copia**, elige un nombre nuevo y autoriza la identidad y el sello.
 6. Abre la copia firmada en Adobe Reader y consulta el panel de firmas.
+
+Para abrir un documento desde el Explorador: en FirmaPDF pulsa **Menú del botón derecho… → Activar menú** una vez. Después utiliza **botón derecho en el PDF → Firmar con FirmaPDF**; en Windows 11, dentro de **Mostrar más opciones**. No cambia tu lector habitual; puedes quitar el menú desde la misma ventana.
 
 ### Android
 

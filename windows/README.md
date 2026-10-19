@@ -16,6 +16,14 @@ Ejecutable local: `artifacts/windows/FirmaPDF/FirmaPDF.exe`. La carpeta contiene
 
 La suite usa identidades efímeras autofirmadas «NO REAL», comprueba RSA y EC, CMS con `SignedCms` de .NET, las cuatro rotaciones con CropBox desplazado, original intacto, segunda firma incremental, certificado caducado, contraseña incorrecta, alteración y revisiones posteriores. El visor nativo de Windows renderiza cada resultado y se comprueba la ubicación visible. También genera una captura de la interfaz WPF sin abrir una ventana interactiva.
 
+## Abrir desde el botón derecho
+
+En la versión portable, abre FirmaPDF y pulsa **Menú del botón derecho… → Activar menú**. Después, botón derecho sobre un PDF → **Firmar con FirmaPDF**. En Windows 11 está en **Mostrar más opciones**. Se abre el documento para seleccionar certificado y recuadro; no se firma automáticamente.
+
+La opción se registra solo para el usuario actual, sin administrador y sin cambiar el lector predeterminado. Se puede quitar desde esa misma ventana. Conserva la carpeta: si cambia de ubicación, vuelve a activar el menú desde la nueva copia. Los comandos `FirmaPDF.exe --register-context-menu` y `FirmaPDF.exe --unregister-context-menu` permiten hacer lo mismo. También se admite `FirmaPDF.exe --open "C:\ruta\documento.pdf"` o una sola ruta PDF como argumento.
+
+La futura distribución por Store requiere declarar su asociación de archivos en el paquete; este registro está pensado para el ZIP portable.
+
 ## Operaciones
 
 1. Abrir PDF: la vista previa y la firma utilizan una copia local del mismo documento.

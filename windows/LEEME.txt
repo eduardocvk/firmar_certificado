@@ -6,6 +6,13 @@ Cambiar de Java a C# no elimina ese aviso. No se modifica la seguridad de Window
 La distribución MSIX desde Microsoft Store está preparada, pendiente de identidad y aprobación.
 Instrucciones: https://github.com/eduardocvk/firmar_certificado/blob/main/windows/DISTRIBUCION.md
 
+MENÚ DEL BOTÓN DERECHO
+Abre FirmaPDF y pulsa «Menú del botón derecho…» → «Activar menú».
+Después: botón derecho en un PDF → «Firmar con FirmaPDF».
+En Windows 11: «Mostrar más opciones» → «Firmar con FirmaPDF».
+No requiere administrador ni cambia tu lector habitual. Puedes quitarlo desde la misma ventana.
+Si mueves la carpeta, activa el menú de nuevo desde la nueva ubicación.
+
 1. Abre el PDF. Se trabaja con una copia temporal.
 2. Elige un certificado de Windows o abre tu .p12/.pfx con contraseña.
 3. Personaliza el texto y la imagen. Variables: {nombre}, {fecha}, {emisor}.
