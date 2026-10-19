@@ -87,7 +87,7 @@ jobs:
           arch: x86_64
           target: google_apis
           disable-animations: true
-          script: bash ./gradlew -PwithAndroid=true :android:connectedDebugAndroidTest --no-daemon; result=$?; adb pull /sdcard/Android/data/es.firmavisible.android/files/preview-test android/build/preview-test || true; exit $result
+          script: bash ./gradlew -PwithAndroid=true :android:connectedDebugAndroidTest --no-daemon; result=$?; adb pull /sdcard/Pictures/FirmaVisibleTests android/build/preview-test || true; adb pull /sdcard/Download/FirmaVisibleTests android/build/pdf-test || true; exit $result
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -95,3 +95,4 @@ jobs:
           path: |
             android/build/reports/androidTests/
             android/build/preview-test/
+            android/build/pdf-test/

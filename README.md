@@ -44,7 +44,7 @@ Algunos visores móviles omiten campos de firma. FirmaVisible prepara una copia 
 - La apariencia forma parte de la revisión firmada; no es una imagen pegada después de firmar.
 - Guarda incrementalmente, comprueba las firmas criptográficas existentes y verifica el resultado antes de publicarlo como copia terminada. Puede añadir otra firma a PDF firmados ordinarios sin cambios posteriores.
 - No sobrescribe el original ni un archivo de salida existente en el motor de firma.
-- Rechaza PDF cifrados, documentos certificados con DocMDP y campos con bloqueo de firma. Rechaza añadir firmas si existen cambios posteriores a la última firma.
+- Rechaza PDF cifrados, formularios XFA, documentos certificados con DocMDP y campos con bloqueo de firma. Rechaza añadir firmas si existen cambios posteriores a la última firma.
 
 La comprobación de la aplicación verifica la **integridad de las revisiones firmadas y sus firmas CMS**. **No comprueba la cadena hasta una raíz de confianza, la revocación mediante OCSP/CRL, listas de confianza europeas ni la cualificación eIDAS. No añade sello de tiempo ni datos LT/LTA.** La fecha visible procede del reloj del dispositivo. El estado de confianza debe comprobarse en un validador que disponga de la política y servicios correspondientes. Un certificado caducado en el futuro requiere evidencias temporales adecuadas para demostrar las circunstancias históricas de la firma.
 

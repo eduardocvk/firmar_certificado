@@ -93,6 +93,15 @@ public final class PdfEngine {
                 drawAppearance(doc, appearance, visualW, visualH, identity.name(), now.toInstant());
                 PDAppearanceDictionary ap = new PDAppearanceDictionary();
                 ap.setNormalAppearance(appearance); widget.setAppearance(ap);
+                // The Android PDFBox port returns early from addSignature when no
+                // visual template is supplied. Explicitly register our custom widget.
+                List<PDAnnotation> annotations=page.getAnnotations();
+                boolean registered=false;
+                for(PDAnnotation annotation:annotations) {
+                    if(annotation.getCOSObject().equals(widget.getCOSObject())) { registered=true;break; }
+                }
+                if(!registered)annotations.add(widget);
+                page.setAnnotations(annotations);
                 widget.getCOSObject().setNeedToBeUpdated(true);
                 page.getCOSObject().setNeedToBeUpdated(true);
                 try (OutputStream out = Files.newOutputStream(temp)) { doc.saveIncremental(out); }
@@ -110,6 +119,8 @@ public final class PdfEngine {
         if (permissions != null && permissions.containsKey(COSName.DOCMDP))
             throw new IOException("Este PDF está certificado y tiene restricciones de modificación. No se ha modificado.");
         PDAcroForm form = doc.getDocumentCatalog().getAcroForm(null);
+        if (form != null && form.getCOSObject().containsKey(COSName.XFA))
+            throw new IOException("Los formularios XFA no son compatibles con esta versión.");
         if (form != null) for (PDField field : form.getFieldTree()) {
             if (field.getCOSObject().containsKey(COSName.getPDFName("Lock")))
                 throw new IOException("El PDF contiene campos con bloqueo de firma; esta versión no los modifica.");

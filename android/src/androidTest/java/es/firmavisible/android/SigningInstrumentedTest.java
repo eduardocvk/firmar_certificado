@@ -27,6 +27,38 @@ import static org.junit.Assert.*;
 
 @RunWith(AndroidJUnit4.class)
 public class SigningInstrumentedTest {
+    private void diagnostic(Context context,String name,String mime,byte[] bytes,boolean image)throws IOException {
+        android.content.ContentValues values=new android.content.ContentValues();
+        values.put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME,name);
+        values.put(android.provider.MediaStore.MediaColumns.MIME_TYPE,mime);
+        values.put(android.provider.MediaStore.MediaColumns.RELATIVE_PATH,image?"Pictures/FirmaVisibleTests":"Download/FirmaVisibleTests");
+        android.net.Uri collection=image?android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI:android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI;
+        android.net.Uri uri=context.getContentResolver().insert(collection,values);
+        if(uri==null)throw new IOException("No se pudo guardar el diagnóstico de prueba.");
+        try(OutputStream out=context.getContentResolver().openOutputStream(uri)){if(out==null)throw new IOException("No se pudo escribir el diagnóstico.");out.write(bytes);}
+    }
+    @Test public void existingFormValuesAreVisibleWithoutChangingTheOriginal() throws Exception {
+        Context context=InstrumentationRegistry.getInstrumentation().getTargetContext();PDFBoxResourceLoader.init(context);
+        File directory=new File(context.getCacheDir(),"form-test-"+UUID.randomUUID());assertTrue(directory.mkdirs());
+        File input=new File(directory,"form.pdf");
+        try {
+            try(PDDocument doc=new PDDocument()) {
+                PDPage page=new PDPage(PDRectangle.A4);doc.addPage(page);
+                var form=new com.tom_roush.pdfbox.pdmodel.interactive.form.PDAcroForm(doc);doc.getDocumentCatalog().setAcroForm(form);
+                var field=new com.tom_roush.pdfbox.pdmodel.interactive.form.PDTextField(form);field.setPartialName("DatoExistente");form.getFields().add(field);
+                var widget=field.getWidgets().get(0);widget.setPage(page);widget.setRectangle(new PDRectangle(100,600,200,40));page.getAnnotations().add(widget);
+                var appearance=new com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceStream(doc);appearance.setBBox(new PDRectangle(200,40));appearance.setResources(new PDResources());
+                try(PDPageContentStream cs=new PDPageContentStream(doc,appearance)){cs.setNonStrokingColor(1f,1f,0f);cs.addRect(0,0,200,40);cs.fill();cs.setNonStrokingColor(0f,0f,0f);cs.beginText();cs.setFont(com.tom_roush.pdfbox.pdmodel.font.PDType1Font.HELVETICA,12);cs.newLineAtOffset(5,12);cs.showText("Dato de formulario");cs.endText();}
+                var ap=new com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceDictionary();ap.setNormalAppearance(appearance);widget.setAppearance(ap);doc.save(input);
+            }
+            byte[] original=java.nio.file.Files.readAllBytes(input.toPath());File display=PreviewDocument.prepare(input,directory);
+            assertNotEquals(input.getCanonicalPath(),display.getCanonicalPath());assertArrayEquals(original,java.nio.file.Files.readAllBytes(input.toPath()));
+            try(ParcelFileDescriptor fd=ParcelFileDescriptor.open(display,ParcelFileDescriptor.MODE_READ_ONLY);PdfRenderer renderer=new PdfRenderer(fd);PdfRenderer.Page page=renderer.openPage(0)) {
+                Bitmap bitmap=Bitmap.createBitmap(page.getWidth(),page.getHeight(),Bitmap.Config.ARGB_8888);bitmap.eraseColor(Color.WHITE);page.render(bitmap,null,null,PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY);
+                int pixel=bitmap.getPixel(110,page.getHeight()-630);assertTrue("Formulario visible en la vista previa",Color.red(pixel)>200&&Color.green(pixel)>200&&Color.blue(pixel)<100);bitmap.recycle();
+            }
+        } finally {File[] files=directory.listFiles();if(files!=null)for(File file:files)file.delete();directory.delete();}
+    }
     @Test public void importedCertificateSignsVisiblePdfInEveryOrientation() throws Exception {
         Context context=InstrumentationRegistry.getInstrumentation().getTargetContext();PDFBoxResourceLoader.init(context);
         KeyPairGenerator generator=KeyPairGenerator.getInstance("RSA");generator.initialize(2048);KeyPair pair=generator.generateKeyPair();
@@ -44,14 +76,17 @@ public class SigningInstrumentedTest {
                 try(PDDocument doc=new PDDocument()) { PDPage page=new PDPage(new PDRectangle(650,850));page.setCropBox(new PDRectangle(20,30,600,780));page.setRotation(rotation);doc.addPage(page);doc.save(input); }
                 PdfEngine.sign(input,output,new Placement(0,.15f,.55f,.5f,.15f),identity);
                 assertEquals(1,PdfEngine.verify(output).signatures);assertTrue(PdfEngine.verify(output).latestCoversWholeFile);
+                try(PDDocument check=PDDocument.load(output)){assertEquals("Campo de firma registrado en la página",1,check.getPage(0).getAnnotations().size());}
                 byte[] signedBytes=java.nio.file.Files.readAllBytes(output.toPath());
                 File display=PreviewDocument.prepare(output,directory);
                 assertNotEquals(output.getCanonicalPath(),display.getCanonicalPath());
                 assertArrayEquals(signedBytes,java.nio.file.Files.readAllBytes(output.toPath()));
                 try(ParcelFileDescriptor fd=ParcelFileDescriptor.open(display,ParcelFileDescriptor.MODE_READ_ONLY);PdfRenderer renderer=new PdfRenderer(fd);PdfRenderer.Page page=renderer.openPage(0)) {
                     Bitmap bitmap=Bitmap.createBitmap(page.getWidth(),page.getHeight(),Bitmap.Config.ARGB_8888);bitmap.eraseColor(Color.WHITE);page.render(bitmap,null,null,PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY);
-                    File shots=new File(context.getExternalFilesDir(null),"preview-test");shots.mkdirs();
-                    try(OutputStream image=new FileOutputStream(new File(shots,"rotation-"+rotation+".png"))){bitmap.compress(Bitmap.CompressFormat.PNG,100,image);}
+                    ByteArrayOutputStream image=new ByteArrayOutputStream();bitmap.compress(Bitmap.CompressFormat.PNG,100,image);
+                    diagnostic(context,"rotation-"+rotation+".png","image/png",image.toByteArray(),true);
+                    diagnostic(context,"signed-"+rotation+".pdf","application/pdf",signedBytes,false);
+                    diagnostic(context,"display-"+rotation+".pdf","application/pdf",java.nio.file.Files.readAllBytes(display.toPath()),false);
                     int pixel=bitmap.getPixel(Math.round(bitmap.getWidth()*.17f),Math.round(bitmap.getHeight()*.68f));assertTrue("Visible signature at rotation "+rotation+", pixel="+Integer.toHexString(pixel)+", size="+bitmap.getWidth()+"x"+bitmap.getHeight(),Color.blue(pixel)>Color.red(pixel)&&Color.red(pixel)>200);bitmap.recycle();
                 }
                 assertTrue(PdfEngine.verify(output).latestCoversWholeFile);assertTrue(display.delete());

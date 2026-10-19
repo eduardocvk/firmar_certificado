@@ -116,5 +116,15 @@ class PdfEngineTest {
         try(PDDocument doc=PDDocument.load(original)){COSDictionary perms=new COSDictionary();perms.setItem(COSName.DOCMDP,new PDSignature());doc.getDocumentCatalog().getCOSObject().setItem(COSName.PERMS,perms);doc.save(certified);}
         assertThrows(IOException.class,()->PdfEngine.sign(certified,directory.resolve("refused.pdf").toFile(),new Placement(0,.1f,.6f,.5f,.1f),rsa));
     }
+    @Test void refusesUnsupportedXfaWithoutProducingAnOutput() throws Exception {
+        File original=pdf(0),xfa=directory.resolve("xfa.pdf").toFile(),output=directory.resolve("no-output.pdf").toFile();
+        try(PDDocument doc=PDDocument.load(original)) {
+            var form=new org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm(doc);doc.getDocumentCatalog().setAcroForm(form);
+            form.getCOSObject().setString(COSName.XFA,"<xfa/>");doc.save(xfa);
+        }
+        byte[] before=Files.readAllBytes(xfa.toPath());
+        assertThrows(IOException.class,()->PdfEngine.sign(xfa,output,new Placement(0,.1f,.6f,.5f,.1f),rsa));
+        assertFalse(output.exists());assertArrayEquals(before,Files.readAllBytes(xfa.toPath()));
+    }
     @Test void rejectsOutsideAndNonFinitePlacement(){assertThrows(IllegalArgumentException.class,()->new Placement(0,.9f,.5f,.2f,.1f));assertThrows(IllegalArgumentException.class,()->new Placement(0,Float.NaN,.5f,.2f,.1f));}
 }
