@@ -35,6 +35,8 @@ Los artefactos de Actions requieren iniciar sesión en GitHub y caducan según s
 
 La previsualización de texto es orientativa; el recuadro se coloca en las coordenadas seleccionadas. El PDF final contiene nombre del certificado y fecha con zona horaria. El mínimo de recuadro es 100 × 42 puntos PDF. Android limita la apertura a 100 MiB y el certificado importado a 4 MiB. Por ahora no se incluye imagen manuscrita personalizada.
 
+Algunos visores móviles omiten campos de firma. FirmaVisible prepara una copia exclusivamente de visualización para mostrar sus apariencias sin cambiar el original firmado. Para revisar el archivo exportado y sus firmas, utiliza un visor que las soporte, como Adobe Reader.
+
 ## Qué firma genera y qué comprueba
 
 - Firma PDF con `/SubFilter /ETSI.CAdES.detached`, CMS separado y atributo `SigningCertificateV2` (SHA-256), diseñada para el perfil **PAdES Baseline B**. No se afirma certificación de conformidad por un laboratorio externo.

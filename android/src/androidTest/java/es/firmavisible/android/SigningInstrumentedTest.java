@@ -44,10 +44,17 @@ public class SigningInstrumentedTest {
                 try(PDDocument doc=new PDDocument()) { PDPage page=new PDPage(new PDRectangle(650,850));page.setCropBox(new PDRectangle(20,30,600,780));page.setRotation(rotation);doc.addPage(page);doc.save(input); }
                 PdfEngine.sign(input,output,new Placement(0,.15f,.55f,.5f,.15f),identity);
                 assertEquals(1,PdfEngine.verify(output).signatures);assertTrue(PdfEngine.verify(output).latestCoversWholeFile);
-                try(ParcelFileDescriptor fd=ParcelFileDescriptor.open(output,ParcelFileDescriptor.MODE_READ_ONLY);PdfRenderer renderer=new PdfRenderer(fd);PdfRenderer.Page page=renderer.openPage(0)) {
+                byte[] signedBytes=java.nio.file.Files.readAllBytes(output.toPath());
+                File display=PreviewDocument.prepare(output,directory);
+                assertNotEquals(output.getCanonicalPath(),display.getCanonicalPath());
+                assertArrayEquals(signedBytes,java.nio.file.Files.readAllBytes(output.toPath()));
+                try(ParcelFileDescriptor fd=ParcelFileDescriptor.open(display,ParcelFileDescriptor.MODE_READ_ONLY);PdfRenderer renderer=new PdfRenderer(fd);PdfRenderer.Page page=renderer.openPage(0)) {
                     Bitmap bitmap=Bitmap.createBitmap(page.getWidth(),page.getHeight(),Bitmap.Config.ARGB_8888);bitmap.eraseColor(Color.WHITE);page.render(bitmap,null,null,PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY);
-                    int pixel=bitmap.getPixel(Math.round(bitmap.getWidth()*.17f),Math.round(bitmap.getHeight()*.68f));assertTrue("Visible signature at rotation "+rotation,Color.blue(pixel)>Color.red(pixel)&&Color.red(pixel)>200);bitmap.recycle();
+                    File shots=new File(context.getExternalFilesDir(null),"preview-test");shots.mkdirs();
+                    try(OutputStream image=new FileOutputStream(new File(shots,"rotation-"+rotation+".png"))){bitmap.compress(Bitmap.CompressFormat.PNG,100,image);}
+                    int pixel=bitmap.getPixel(Math.round(bitmap.getWidth()*.17f),Math.round(bitmap.getHeight()*.68f));assertTrue("Visible signature at rotation "+rotation+", pixel="+Integer.toHexString(pixel)+", size="+bitmap.getWidth()+"x"+bitmap.getHeight(),Color.blue(pixel)>Color.red(pixel)&&Color.red(pixel)>200);bitmap.recycle();
                 }
+                assertTrue(PdfEngine.verify(output).latestCoversWholeFile);assertTrue(display.delete());
                 assertTrue(output.delete());assertTrue(input.delete());
             }
         } finally { File[] files=directory.listFiles();if(files!=null)for(File file:files)file.delete();directory.delete(); }

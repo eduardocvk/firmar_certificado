@@ -28,7 +28,7 @@ public final class MainActivity extends Activity {
     private PdfSelectionView preview;
     private TextView status,identityLabel,pageLabel;
     private Identity identity;
-    private File session,input,signed;
+    private File session,input,displayInput,signed;
     private String originalName="documento.pdf";
     private String signedName="documento_firmado.pdf";
     private int page,pages;
@@ -98,14 +98,17 @@ public final class MainActivity extends Activity {
             try(InputStream in=getContentResolver().openInputStream(uri);OutputStream out=new FileOutputStream(file)){
                 if(in==null)throw new IOException("No se pudo abrir el documento.");copy(in,out,100L*1024*1024);
             }catch(Exception e){file.delete();throw e;}
-            try(ParcelFileDescriptor fd=ParcelFileDescriptor.open(file,ParcelFileDescriptor.MODE_READ_ONLY);PdfRenderer renderer=new PdfRenderer(fd)){
+            File display;
+            try { display=PreviewDocument.prepare(file,session); }
+            catch(Exception e) { file.delete();throw e; }
+            try(ParcelFileDescriptor fd=ParcelFileDescriptor.open(display,ParcelFileDescriptor.MODE_READ_ONLY);PdfRenderer renderer=new PdfRenderer(fd)){
                 if(renderer.getPageCount()==0)throw new IOException("PDF sin páginas.");
             }catch(Exception e){file.delete();throw e;}
-            return file;
-        },file->{if(input!=null)input.delete();input=file;originalName=name;page=0;render();});
+            return new File[]{file,display};
+        },files->{if(displayInput!=null&&displayInput!=input)displayInput.delete();if(input!=null)input.delete();input=files[0];displayInput=files[1];originalName=name;page=0;render();});
     }
     private void render(){
-        File current=input;int index=page;
+        File current=displayInput;int index=page;
         work("Preparando página…",()->{
             try(ParcelFileDescriptor fd=ParcelFileDescriptor.open(current,ParcelFileDescriptor.MODE_READ_ONLY);PdfRenderer renderer=new PdfRenderer(fd);PdfRenderer.Page pdf=renderer.openPage(index)){
                 pages=renderer.getPageCount();float scale=Math.min(2f,1600f/Math.max(pdf.getWidth(),pdf.getHeight()));

@@ -17,7 +17,7 @@ Las identidades de las pruebas se generan al ejecutarlas, son autofirmadas y dic
 | Sobrescritura | El original y un destino existente permanecen intactos. |
 | Restricciones | Rechazo de documentos certificados con DocMDP. |
 | OpenSSL | Otra implementación verifica el CMS, sin validar confianza, y rechaza contenido alterado. |
-| Instrumentación Android | Importa una identidad PKCS#12, firma con el motor Android y renderiza la apariencia con PDFRenderer nativo en las cuatro rotaciones. |
+| Instrumentación Android | Importa una identidad PKCS#12, firma con el motor Android y renderiza la apariencia con PDFRenderer nativo a través de la copia de visualización en las cuatro rotaciones. Comprueba que esa copia no modifica el original firmado. |
 
 Los informes de cada ejecución están en Actions. Las pruebas de JVM producen ejemplos de PDF y capturas dentro de `pdf/build/test-artifacts`, excluidos de Git.
 

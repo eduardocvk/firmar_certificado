@@ -8,7 +8,9 @@ Se descarta un backend custodio de certificados en esta versión. La app no pide
 
 ## PDFBox en las dos plataformas
 
-JVM usa Apache PDFBox 2.0.36. Android usa `com.tom-roush:pdfbox-android:2.0.27.0`, port basado en una versión anterior de PDFBox. La tarea `generatePdfEngine` cambia únicamente imports `org.apache.pdfbox` → `com.tom_roush.pdfbox`, de modo que el algoritmo permanece en una fuente. El renderizado de Android usa `android.graphics.pdf.PdfRenderer`, independiente del motor que firma.
+JVM usa Apache PDFBox 2.0.36. Android usa `com.tom-roush:pdfbox-android:2.0.27.0`, port basado en una versión anterior de PDFBox. La tarea `generatePdfEngine` cambia únicamente imports `org.apache.pdfbox` → `com.tom_roush.pdfbox`, de modo que el algoritmo permanece en una fuente. El renderizado de Android usa `android.graphics.pdf.PdfRenderer`.
+
+La API clásica de PdfRenderer omite apariencias de ciertos campos de formulario, incluidas firmas. Para mostrar firmas existentes, `PreviewDocument` genera una copia desechable que aplana exclusivamente esos campos. **Esa copia solo se renderiza: nunca se firma, verifica o exporta.** Todas las operaciones de firma, comprobación y exportación utilizan el PDF firmado original. La prueba de instrumentación comprueba que generar la vista previa no cambia ningún byte del original. Algunos visores externos también omiten campos de firma; para consultar firmas debe utilizarse un visor compatible, como Adobe Reader. Véanse las [opciones de renderizado de formularios de Android](https://developer.android.com/reference/android/graphics/pdf/RenderParams).
 
 **Limitación de mantenimiento:** el port Android va por detrás de PDFBox de escritorio. La coincidencia de API no significa coincidencia de correcciones de seguridad. Antes de producción hay que evaluar un port mantenido con parches o un SDK alternativo, revisar sus licencias y añadir pruebas de documentos adversarios. No se presenta esta preversión como un lector endurecido para documentos hostiles.
 
