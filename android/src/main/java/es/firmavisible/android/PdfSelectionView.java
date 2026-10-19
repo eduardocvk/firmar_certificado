@@ -13,9 +13,12 @@ public final class PdfSelectionView extends View {
     private int mode;
     private boolean drawing;
     private String signer="Selecciona un certificado";
+    private String issuer="Emisor del certificado";
+    private final SignatureDrawing signature;
+    private int pageWidth=600,pageHeight=800;
     private final ScaleGestureDetector scale;
     public PdfSelectionView(Context context) {
-        super(context); setContentDescription("Página PDF. Arrastra para colocar la firma; pellizca para ampliar.");
+        super(context);signature=new SignatureDrawing(context); setContentDescription("Página PDF. Arrastra para colocar la firma; pellizca para ampliar.");
         scale=new ScaleGestureDetector(context,new ScaleGestureDetector.SimpleOnScaleGestureListener() {
             public boolean onScaleBegin(ScaleGestureDetector detector) { drawing=false; box=before==null?null:before.clone(); return true; }
             public boolean onScale(ScaleGestureDetector detector) {
@@ -28,9 +31,11 @@ public final class PdfSelectionView extends View {
             }
         });
     }
-    public void setBitmap(Bitmap image) { Bitmap previous=bitmap; bitmap=image; box=null; resetZoom(); if(previous!=null&&previous!=image)previous.recycle(); }
-    public void release() { if(bitmap!=null)bitmap.recycle(); bitmap=null; }
+    public void setBitmap(Bitmap image,int width,int height) {pageWidth=width;pageHeight=height;Bitmap previous=bitmap; bitmap=image; box=null; resetZoom(); if(previous!=null&&previous!=image)previous.recycle(); }
+    public void release() { if(bitmap!=null)bitmap.recycle(); bitmap=null;signature.release(); }
+    public void setAppearance(es.firmavisible.core.SignatureAppearance value){signature.setStyle(value);invalidate();}
     public void setSigner(String name) { signer=name; invalidate(); }
+    public void setSigner(String name,String issuer) {this.issuer=issuer;setSigner(name);}
     public float[] selection() { return box==null?null:box.clone(); }
     public void resetBox() { if(bitmap!=null) { box=new float[]{.1f,.72f,.55f,.14f}; invalidate(); } }
     public void resetZoom() { zoom=1;offsetX=offsetY=0;invalidate(); }
@@ -40,16 +45,19 @@ public final class PdfSelectionView extends View {
         return new RectF((getWidth()-w)/2+offsetX,(getHeight()-h)/2+offsetY,(getWidth()+w)/2+offsetX,(getHeight()+h)/2+offsetY);
     }
     protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);canvas.drawColor(Color.rgb(225,232,240));
-        if(bitmap==null) { paint.setColor(Color.DKGRAY);paint.setTextSize(16*getResources().getDisplayMetrics().scaledDensity);canvas.drawText("Abre un PDF para empezar",24,getHeight()/2f,paint);return; }
+        super.onDraw(canvas);canvas.drawColor(0xFFE8EDF5);
+        if(bitmap==null) {
+            float d=getResources().getDisplayMetrics().density,x=getWidth()/2f,y=getHeight()/2f;
+            paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(2*d);paint.setColor(0xFFAAB8D1);canvas.drawRoundRect(x-22*d,y-66*d,x+22*d,y-12*d,6*d,6*d,paint);
+            canvas.drawLine(x-11*d,y-48*d,x+11*d,y-48*d,paint);canvas.drawLine(x-11*d,y-37*d,x+6*d,y-37*d,paint);
+            paint.setStyle(Paint.Style.FILL);paint.setColor(0xFF344968);paint.setTextAlign(Paint.Align.CENTER);paint.setTypeface(Typeface.create("sans-serif-medium",Typeface.NORMAL));paint.setTextSize(17*getResources().getDisplayMetrics().scaledDensity);canvas.drawText("Aquí empieza tu firma",x,y+18*d,paint);
+            paint.setTypeface(Typeface.DEFAULT);paint.setTextSize(12*getResources().getDisplayMetrics().scaledDensity);paint.setColor(0xFF66758E);canvas.drawText("Abre un PDF y elige dónde colocarla",x,y+42*d,paint);paint.setTextAlign(Paint.Align.LEFT);return;
+        }
         RectF page=pageRect();canvas.drawBitmap(bitmap,null,page,paint);
         if(box!=null) {
             RectF r=new RectF(page.left+box[0]*page.width(),page.top+box[1]*page.height(),page.left+(box[0]+box[2])*page.width(),page.top+(box[1]+box[3])*page.height());
-            paint.setStyle(Paint.Style.FILL);paint.setColor(Color.argb(240,231,240,255));canvas.drawRect(r,paint);
+            signature.draw(canvas,r,box[2]*pageWidth,box[3]*pageHeight,signer,issuer);
             paint.setColor(Color.rgb(28,75,140));paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(3);canvas.drawRect(r,paint);paint.setStyle(Paint.Style.FILL);
-            canvas.save();canvas.clipRect(r);float size=Math.min(22,Math.max(10,r.height()/5));paint.setTextSize(size);
-            canvas.drawText("Firmado digitalmente",r.left+6,r.top+size+4,paint);canvas.drawText(signer,r.left+6,r.top+2.2f*size+4,paint);
-            canvas.drawText("Fecha y hora del dispositivo",r.left+6,r.top+3.4f*size+4,paint);canvas.restore();
             canvas.drawRect(r.right-10,r.bottom-10,r.right+10,r.bottom+10,paint);
         }
     }

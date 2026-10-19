@@ -61,7 +61,14 @@ jobs:
           log-accepted-android-sdk-licenses: false
       - uses: gradle/actions/setup-gradle@v4
       - name: Compilar APK y análisis estático
+        env:
+          FIRMAVISIBLE_LIVE_TSA: 'true'
         run: bash ./gradlew -PwithAndroid=true :pdf:test :android:assembleDebug :android:assembleAndroidTest :android:lintDebug --no-daemon
+      - name: Verificación independiente del CMS y sello real
+        shell: pwsh
+        run: |
+          ./scripts/verify-openssl.ps1
+          ./scripts/verify-timestamp.ps1
       - uses: actions/upload-artifact@v4
         with:
           name: FirmaVisible-Android-pruebas
@@ -70,7 +77,10 @@ jobs:
         if: always()
         with:
           name: analisis-android
-          path: android/build/reports/lint-results-debug.html
+          path: |
+            android/build/reports/lint-results-debug.html
+            pdf/build/reports/tests/
+            pdf/build/test-artifacts/
   android-device:
     runs-on: ubuntu-latest
     steps:

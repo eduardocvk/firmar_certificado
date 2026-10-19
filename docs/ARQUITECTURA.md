@@ -4,7 +4,7 @@
 
 Windows usa C#/.NET 10, WPF e iText Community; Android usa APIs Java nativas, minSdk 26. Son motores independientes con pruebas equivalentes de CMS, integridad y geometría. Windows utiliza Windows.Data.Pdf para renderizar y System.Security.Cryptography para acceder a las claves. El módulo Windows se distribuye bajo AGPL-3.0-or-later por el uso de iText Community. La clave del almacén de Windows o Android se utiliza mediante su interfaz de firma; no se exporta. La importación PKCS#12 utiliza una instancia explícita del proveedor Bouncy Castle, sin sustituir globalmente proveedores del sistema Android.
 
-Se descarta un backend custodio de certificados en esta versión. La app no pide permiso de Internet en Android. El usuario autoriza cada firma desde una confirmación, además de los diálogos que requiera el proveedor de claves.
+Se descarta un backend custodio de certificados en esta versión. Android utiliza Internet solo para el sello opcional RFC3161. [Diseño, privacidad y validación](ANDROID_0_2.md). El usuario autoriza cada firma desde una confirmación, además de los diálogos que requiera el proveedor de claves.
 
 ## PDFBox en Android y pruebas JVM
 
@@ -36,4 +36,4 @@ Windows: publicación .NET autocontenida, sin Java. La descarga ZIP no está fir
 
 ## Evolución a B-T y LT
 
-El sello de tiempo requiere seleccionar una TSA, gestionar su autenticación y verificar su respuesta (nonce, algoritmo, imprint, firma y confianza). El nivel LT requiere recopilar y validar las evidencias de revocación y cadena necesarias e incorporarlas al PDF según el estándar. No debe simularse LT adjuntando datos sin comprobarlos. La validación de confianza debería utilizar una política explícita y, preferiblemente, una implementación consolidada como DSS. Hasta entonces la interfaz informa exclusivamente de integridad criptográfica.
+Android incorpora sello de tiempo opcional RFC3161 con DigiCert, comprobando nonce, impronta, firma/EKU y cadena a raíz incorporada. Windows sigue sin sello de tiempo. No se comprueba revocación de la TSA ni cualificación del servicio. El nivel LT requiere recopilar y validar las evidencias de revocación y cadena necesarias e incorporarlas al PDF según el estándar. No debe simularse LT adjuntando datos sin comprobarlos. La validación de confianza debería utilizar una política explícita y, preferiblemente, una implementación consolidada como DSS. Hasta entonces la interfaz informa exclusivamente de integridad criptográfica.

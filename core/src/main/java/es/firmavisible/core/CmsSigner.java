@@ -17,6 +17,9 @@ import org.bouncycastle.operator.jcajce.*;
 public final class CmsSigner {
     private CmsSigner() {}
     public static byte[] sign(InputStream input, Identity identity) throws Exception {
+        return sign(input, identity, null);
+    }
+    public static byte[] sign(InputStream input, Identity identity, TimestampAuthority tsa) throws Exception {
         identity.checkUsable();
         var certHash = MessageDigest.getInstance("SHA-256").digest(identity.certificate().getEncoded());
         var attributes = new Hashtable<ASN1ObjectIdentifier, Attribute>();
@@ -40,6 +43,19 @@ public final class CmsSigner {
             public Object getContent() { return input; }
             public void write(OutputStream out) throws IOException { byte[] b = new byte[32768]; int n; while ((n = input.read(b)) != -1) out.write(b, 0, n); }
         };
-        return generator.generate(content, false).getEncoded();
+        CMSSignedData signed=generator.generate(content, false);
+        if(tsa!=null) {
+            List<SignerInformation> stamped=new ArrayList<>();
+            for(SignerInformation info:signed.getSignerInfos().getSigners()) {
+                byte[] token=tsa.timestamp(info.getSignature());
+                var timestamp=new Attribute(PKCSObjectIdentifiers.id_aa_signatureTimeStampToken,new DERSet(ASN1Primitive.fromByteArray(token)));
+                var table=new AttributeTable(timestamp);
+                SignerInformation updated=SignerInformation.replaceUnsignedAttributes(info,table);
+                Rfc3161Client.verifyEmbedded(updated);
+                stamped.add(updated);
+            }
+            signed=CMSSignedData.replaceSigners(signed,new SignerInformationStore(stamped));
+        }
+        return signed.getEncoded();
     }
 }

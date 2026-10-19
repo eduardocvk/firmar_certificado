@@ -4,6 +4,8 @@ Las identidades de las pruebas se generan al ejecutarlas, son autofirmadas y dic
 
 Windows ejecuta 49 comprobaciones en C# con iText, verificación independiente de CMS mediante .NET SignedCms y OpenSSL, y renderizado nativo Windows.Data.Pdf. También comprueba la construcción de la ventana WPF. Los artefactos están en `artifacts/windows-tests`. El CI valida el MSIX con una identidad ficticia; no acredita publicación ni firma de editor.
 
+El usuario confirmó que la versión Android anterior funciona, firma y obtiene una firma válida. Android 0.2 añade pruebas de apariencia personalizada y RFC3161; la revisión manual de los cambios con su FNMT sigue pendiente. Véase [Android 0.2](ANDROID_0_2.md).
+
 ## Pruebas automatizadas
 
 | Prueba | Qué demuestra |

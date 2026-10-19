@@ -1,4 +1,5 @@
 plugins { id 'java-library' }
+sourceSets.test.java.srcDir 'src/testShared/java'
 dependencies {
     api project(':core')
     api 'org.apache.pdfbox:pdfbox:2.0.36'

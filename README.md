@@ -2,7 +2,7 @@
 
 Aplicaciones locales para **Windows 10/11 x64** y **Android 8 o posterior** que firman PDF con certificado digital y permiten elegir la posición de su apariencia visible.
 
-**Windows 0.2.0 en C#/.NET; Android 0.1.0. Versiones de pruebas.** Implementa firma con certificado y comprobación criptográfica, no una certificación jurídica del documento. No se ha probado con el certificado FNMT real del propietario del proyecto. Conviene empezar con un PDF de prueba y comprobar el resultado en Adobe Reader y en el sistema al que se enviará.
+**Windows 0.2.0 en C#/.NET; Android 0.2.0. Versiones de pruebas.** Implementa firma con certificado y comprobación criptográfica, no una certificación jurídica del documento. No se ha probado con el certificado FNMT real del propietario del proyecto. Conviene empezar con un PDF de prueba y comprobar el resultado en Adobe Reader y en el sistema al que se enviará.
 
 ## Descargar y utilizar
 
@@ -31,11 +31,13 @@ Los artefactos de Actions requieren iniciar sesión en GitHub y caducan según s
 
 1. Abre un PDF desde la aplicación, o utiliza **Compartir / Abrir con → FirmaVisible** desde otra aplicación.
 2. En **Certificado**, elige una identidad del almacén de Android o abre tu `.p12/.pfx` con su contraseña. La importación directa solo dura la sesión; no guarda el certificado en disco. Si ya tienes instalado el certificado utilizado por AutoFirma, comprueba si aparece en el selector de Android. Si no aparece, puedes abrir tu copia `.p12/.pfx`.
-3. Elige la página y dibuja el recuadro. Puedes moverlo, ajustar su esquina, ampliar con un pellizco y desplazar con dos dedos. **Ajustar** restablece el zoom.
-4. Pulsa **Firmar y guardar copia** y confirma la identidad.
-5. Guarda el archivo con el selector de Android o compártelo. Los botones **Guardar última copia** y **Compartir última copia** recuperan el último resultado durante esa sesión.
+3. Pulsa **Personalizar firma** para guardar texto e imagen. Usa `{nombre}`, `{fecha}` y `{emisor}` para completarlos con el certificado elegido. Elige PNG/JPEG y fondo con marco o transparente. El diseño se conserva en este móvil.
+4. Activa **Sello de tiempo** para solicitar RFC3161 a DigiCert (requiere Internet); desactívalo para firmar sin conexión. Solo se envía una huella de la firma. Si el servicio falla, no se guarda una firma sin el sello solicitado.
+5. Elige la página y dibuja el recuadro. Puedes moverlo, ajustar su esquina, ampliar con un pellizco y desplazar con dos dedos. **Ajustar** restablece el zoom.
+6. Pulsa **Firmar y guardar copia** y confirma la identidad y el uso del sello.
+7. Guarda el archivo con el selector de Android o compártelo. El menú **•••** permite guardar o compartir el último resultado y comprobar el PDF abierto.
 
-La previsualización de texto es orientativa; el recuadro se coloca en las coordenadas seleccionadas. El PDF final contiene nombre del certificado y fecha con zona horaria. El mínimo de recuadro es 100 × 42 puntos PDF. Android limita la apertura a 100 MiB y el certificado importado a 4 MiB. Por ahora no se incluye imagen manuscrita personalizada.
+La previsualización de texto es orientativa; el recuadro se coloca en las coordenadas seleccionadas. El PDF final contiene nombre del certificado y fecha con zona horaria. El mínimo de recuadro es 100 × 42 puntos PDF. Android limita la apertura a 100 MiB y el certificado importado a 4 MiB. Android admite imagen personalizada y texto de hasta 600 caracteres. La imagen se limita a 1200 píxeles de lado y se normaliza sin metadatos. Si el texto no cabe de forma legible, se pide ampliar el recuadro o acortarlo; no se trunca silenciosamente.
 
 Algunos visores móviles omiten campos de firma. FirmaVisible prepara una copia exclusivamente de visualización para mostrar sus apariencias sin cambiar el original firmado. Para revisar el archivo exportado y sus firmas, utiliza un visor que las soporte, como Adobe Reader.
 
@@ -48,13 +50,13 @@ Algunos visores móviles omiten campos de firma. FirmaVisible prepara una copia 
 - No sobrescribe el original ni un archivo de salida existente en el motor de firma.
 - Rechaza PDF cifrados, formularios XFA, documentos certificados con DocMDP y campos con bloqueo de firma. Rechaza añadir firmas si existen cambios posteriores a la última firma.
 
-La comprobación de la aplicación verifica la **integridad de las revisiones firmadas y sus firmas CMS**. **No comprueba la cadena hasta una raíz de confianza, la revocación mediante OCSP/CRL, listas de confianza europeas ni la cualificación eIDAS. No añade sello de tiempo ni datos LT/LTA.** La fecha visible procede del reloj del dispositivo. El estado de confianza debe comprobarse en un validador que disponga de la política y servicios correspondientes. Un certificado caducado en el futuro requiere evidencias temporales adecuadas para demostrar las circunstancias históricas de la firma.
+La comprobación de la aplicación verifica la **integridad de las revisiones firmadas y sus firmas CMS**. **No comprueba la cadena hasta una raíz de confianza, la revocación mediante OCSP/CRL, listas de confianza europeas ni la cualificación eIDAS. Windows no añade sello de tiempo. Android incorpora opcionalmente un sello RFC3161; no se añaden datos LT/LTA.** La fecha visible procede del reloj del dispositivo, incluso con sello: la hora acreditada por la TSA queda en el token y en la confirmación final. El estado de confianza debe comprobarse en un validador que disponga de la política y servicios correspondientes. Un certificado caducado en el futuro requiere evidencias temporales adecuadas para demostrar las circunstancias históricas de la firma.
 
 Usar un certificado FNMT en un archivo `.p12/.pfx` no convierte por sí solo la firma en cualificada. La categoría jurídica depende también del certificado, el dispositivo de creación y el proceso. La aceptación de un trámite depende de sus requisitos. Véanse [eIDAS](https://eur-lex.europa.eu/eli/reg/2014/910/) y [documentación europea de PAdES/DSS](https://ec.europa.eu/digital-building-blocks/DSS/webapp-demo/doc/dss-documentation.html).
 
 ## Privacidad
 
-No hay servidor, cuentas, analítica ni subida de PDF, claves o contraseñas. Android no solicita permiso de Internet y desactiva las copias de seguridad de la aplicación. En Windows se utilizan handles de claves del almacén del sistema; en Android, handles del `KeyChain` cuando se escoge esa vía. El sistema decide las protecciones de cada clave: importar un certificado no garantiza almacenamiento en hardware.
+No hay servidor propio, cuentas, analítica ni subida de PDF, claves o contraseñas. Android desactiva las copias de seguridad y utiliza Internet únicamente para el sello opcional de DigiCert: envía la huella SHA-256 de la firma y el nonce, nunca el PDF, el certificado del usuario, claves ni contraseñas. El servicio conoce la IP de conexión. El endpoint oficial usa HTTP, limitado por configuración de red a `timestamp.digicert.com`; el token se autentica mediante su firma y cadena a DigiCert G4 incorporada. Se comprueban nonce, huella, EKU y cadena, sin revocación ni declaración de sello cualificado. [Detalles](docs/ANDROID_0_2.md). En Windows se utilizan handles de claves del almacén del sistema; en Android, handles del `KeyChain` cuando se escoge esa vía. El sistema decide las protecciones de cada clave: importar un certificado no garantiza almacenamiento en hardware.
 
 Los certificados abiertos directamente permanecen en memoria durante la sesión y se pueden olvidar desde la interfaz. Las contraseñas se limpian de los buffers controlados por la app después de importar. Esto no garantiza el borrado de todas las copias internas de las bibliotecas o de la máquina virtual. Los PDF abiertos se copian a una carpeta temporal; Android conserva resultados firmados en la caché para permitir compartirlos. Puedes eliminar la caché desde los ajustes de Android. Guarda la copia final antes de cerrar la sesión. No subas tu certificado al repositorio ni lo incluyas en incidencias.
 
@@ -89,7 +91,7 @@ El flujo de CI compila Windows y Android, ejecuta las pruebas del motor, verific
 - `android`: interfaz nativa, renderizador PDF de Android, KeyChain y selector de documentos. El motor PDF se genera desde la misma fuente, cambiando exclusivamente el namespace de PDFBox.
 - [Estado y validación](docs/VALIDACION.md), [decisiones técnicas](docs/ARQUITECTURA.md).
 
-Antes de distribuir una versión de producción: completar pruebas reales FNMT y de interacción en dispositivos, revisar y actualizar el motor PDF de Android, añadir sello de tiempo de un prestador elegido, validación PKI/OCSP/CRL y evidencias LT, endurecer el tratamiento de PDF no confiables y configurar una clave estable para firmar las entregas Android. Una integración de firma remota cualificada sería un proyecto adicional con un prestador cualificado.
+Antes de distribuir una versión de producción: completar pruebas reales FNMT y de interacción en dispositivos, revisar y actualizar el motor PDF de Android, evaluar prestador/sello cualificado si el trámite lo exige, validación PKI/OCSP/CRL y evidencias LT, endurecer el tratamiento de PDF no confiables y configurar una clave estable para firmar las entregas Android. Una integración de firma remota cualificada sería un proyecto adicional con un prestador cualificado.
 
 ## Licencias
 
