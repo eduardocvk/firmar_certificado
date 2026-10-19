@@ -1,0 +1,23 @@
+<Window x:Class="FirmaVisible.App.AppearanceEditor" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:FirmaVisible.App" Title="Tu firma visible" Width="780" Height="780" MinWidth="620" MinHeight="600" WindowStartupLocation="CenterOwner" Background="#F5F7FC" Foreground="#172D47" FontFamily="Segoe UI">
+  <Grid Background="#F5F7FC"><Grid Margin="28">
+    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+    <StackPanel><TextBlock Text="Tu firma visible" FontSize="27" FontWeight="SemiBold"/><TextBlock Text="Guarda un diseño y reutilízalo en tus documentos." Foreground="#66758E" Margin="0,6,0,20"/></StackPanel>
+    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+      <StackPanel Margin="0,0,12,0">
+        <Border Background="White" CornerRadius="14" Padding="24" Margin="0,0,0,18"><Viewbox Stretch="Uniform" MaxHeight="180"><local:SignaturePreview x:Name="DesignPreview" Width="480" Height="156"/></Viewbox></Border>
+        <TextBlock Text="Texto de la firma" FontWeight="SemiBold" Margin="0,0,0,8"/>
+        <Border Background="White" CornerRadius="10" Padding="4"><TextBox x:Name="TemplateText" MinHeight="104" MaxLength="600" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" FontSize="14" Padding="10" BorderThickness="0" TextChanged="DraftChanged"/></Border>
+        <WrapPanel Margin="0,8,0,8"><Button Content="+ Nombre" Tag="{}{nombre}" Click="InsertToken" Margin="0,0,8,0"/><Button Content="+ Fecha" Tag="{}{fecha}" Click="InsertToken" Margin="0,0,8,0"/><Button Content="+ Emisor" Tag="{}{emisor}" Click="InsertToken"/></WrapPanel>
+        <TextBlock Text="La fecha visible procede del ordenador. La hora acreditada del sello se consulta en el panel de firmas del PDF." FontSize="11" Foreground="#66758E" TextWrapping="Wrap" Margin="0,0,0,18"/>
+        <TextBlock Text="Imagen" FontWeight="SemiBold"/>
+        <TextBlock x:Name="ImageState" Text="Sin imagen" Foreground="#66758E" Margin="0,6,0,8"/>
+        <WrapPanel><Button Content="Elegir PNG o JPEG…" Click="ChooseImage" Margin="0,0,8,0"/><Button Content="Quitar imagen" Click="RemoveImage"/></WrapPanel>
+        <TextBlock Text="Se mantiene la proporción y la transparencia. Deja el texto vacío para utilizar solo la imagen." FontSize="11" Foreground="#66758E" TextWrapping="Wrap" Margin="0,8,0,12"/>
+        <CheckBox x:Name="DecoratedCheck" Content="Fondo claro y marco" IsChecked="True" Checked="DraftChanged" Unchecked="DraftChanged" Margin="0,8,0,14"/>
+        <TextBlock Text="El diseño se guarda en tu perfil de Windows, sin certificado ni contraseña." FontSize="11" Foreground="#66758E" TextWrapping="Wrap"/>
+        <TextBlock x:Name="ValidationText" Foreground="#A13B30" TextWrapping="Wrap" Margin="0,12,0,4"/>
+      </StackPanel>
+    </ScrollViewer>
+    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,18,0,0"><Button Content="Cancelar" IsCancel="True" MinWidth="110" Margin="0,0,10,0"/><Button Content="Guardar diseño" Click="SaveDesign" IsDefault="True" MinWidth="150" Background="#3155D9" Foreground="White"/></StackPanel>
+  </Grid>
+</Grid></Window>

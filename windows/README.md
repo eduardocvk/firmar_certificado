@@ -1,6 +1,6 @@
 # FirmaVisible para Windows — C#/.NET y WPF
 
-Versión 0.2. Motor e interfaz completamente .NET: no se ejecuta Java ni se invoca el antiguo firmador Java desde un proceso auxiliar. Visor `Windows.Data.Pdf`, claves del usuario mediante las APIs criptográficas de .NET e iText Community 9.8 para firma incremental de PDF.
+Versión 0.3. Motor e interfaz completamente .NET: no se ejecuta Java ni se invoca el antiguo firmador Java desde un proceso auxiliar. Visor `Windows.Data.Pdf`, claves del usuario mediante las APIs criptográficas de .NET e iText Community 9.8 para firma incremental de PDF.
 
 ## Compilar y probar
 
@@ -20,8 +20,9 @@ La suite usa identidades efímeras autofirmadas «NO REAL», comprueba RSA y EC,
 
 1. Abrir PDF: la vista previa y la firma utilizan una copia local del mismo documento.
 2. Elegir certificado del almacén personal de Windows o abrir PKCS#12 con contraseña. La importación utiliza `EphemeralKeySet` y dura la sesión.
-3. Elegir página y dibujar, mover o redimensionar el recuadro. Ajustar zoom si hace falta.
-4. Confirmar nombre, emisor y huella del certificado; guardar una copia con nombre nuevo.
+3. Personalizar texto e imagen, incluyendo `{nombre}`, `{fecha}` y `{emisor}`. El diseño se conserva en `%LOCALAPPDATA%\FirmaVisible\settings.json` junto con la preferencia de sello, sin certificado ni contraseña.
+4. Activar o desactivar el sello de tiempo. Elegir página y dibujar, mover o redimensionar el recuadro. Ajustar zoom si hace falta.
+5. Confirmar identidad y uso del sello; guardar una copia con nombre nuevo. **Abrir última copia firmada** utiliza el visor configurado en Windows.
 
 El código no exporta las claves del almacén para firmar. Las consultas de cadena que se usan para incorporar certificados públicos desactivan descargas y revocación, por lo que **no se presentan como validación de confianza**. La copia especial para renderizar formularios se aplana exclusivamente para visualización: nunca se firma, comprueba ni exporta.
 
@@ -29,7 +30,7 @@ El código no exporta las claves del almacén para firmar. Las consultas de cade
 
 `ETSI.CAdES.detached`, SHA-256, certificado firmante y cadena disponible, `SigningCertificateV2`, apariencia incorporada y guardado incremental. Se comprueban todas las firmas antes y después de añadir otra. Se rechazan PDF cifrados, XFA, DocMDP y campos con bloqueo, o documentos con bytes posteriores a la última firma.
 
-Sin sello de tiempo, validación PKI/revocación, evidencias LT ni declaración de firma cualificada. La fecha visible procede del dispositivo. Pendiente validación manual con FNMT real, Adobe Reader y el destinatario previsto.
+Sello opcional RFC3161 de DigiCert: se comprueban nonce, huella, firma/EKU y cadena con raíz DigiCert G4 incorporada. Solo se envía la huella del valor de firma, nunca PDF, certificados del usuario ni claves. Sin comprobación de revocación, cualificación o evidencias LT. El endpoint oficial es HTTP y se verifica criptográficamente el token; no se confía en el transporte. Si falla el sello solicitado, no se produce un resultado degradado. La hora acreditada se muestra al terminar y en el PDF. La fecha visible procede del dispositivo. Pendiente validación manual con FNMT real, Adobe Reader y el destinatario previsto.
 
 ## Firma del programa y distribución
 
@@ -38,3 +39,5 @@ La firma de los PDF y la identidad del editor del ejecutable son independientes.
 ## Licencia
 
 El código y la aplicación de `windows/` se ofrecen bajo **AGPL-3.0-or-later**, al integrar iText Community. Fuente completa y licencia incluidas; se conservan Producer y avisos de iText en la salida. Consulta `LICENSE.txt`, `ITEXT-LICENSE.md`, `THIRD_PARTY.txt` y `licenses/`. Los componentes Java/Android del repositorio son independientes y conservan Apache-2.0.
+
+Para probar el sello real con una identidad sintética, define FIRMAVISIBLE_LIVE_TSA=true antes de ejecutar las pruebas y después ejecuta scripts/verify-timestamp.ps1 -Artifacts artifacts/windows-tests. No se comprueba la revocación. El CI ejecuta esta comprobación y OpenSSL exige que se rechace una alteración.

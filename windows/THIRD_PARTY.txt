@@ -1,4 +1,4 @@
-FirmaVisible Windows 0.2
+FirmaVisible Windows 0.3
 Código fuente: https://github.com/eduardocvk/firmar_certificado/tree/main/windows
 Licencia de la aplicación Windows: AGPL-3.0-or-later. Sin garantía.
 
@@ -15,3 +15,7 @@ https://www.bouncycastle.org/licence.html
 El visor utiliza Windows.Data.Pdf del sistema operativo.
 
 El resto de componentes Java y Android del repositorio conservan Apache-2.0.
+
+Noto Sans (Windows appearance and preview): SIL Open Font License 1.1, licenses/NotoSans-OFL.txt.
+System.Security.Cryptography.Pkcs 10.0.13: Microsoft, MIT; licenses/DOTNET-LICENSE.txt.
+DigiCert public TSA root provenance and limits: licenses/TSA-README.txt. It is not installed in Windows trust.

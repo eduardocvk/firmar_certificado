@@ -164,6 +164,7 @@ internal static class Program
             var perms = new PdfDictionary(); perms.Put(PdfName.DocMDP,new PdfDictionary()); doc.GetCatalog().GetPdfObject().Put(PdfName.Perms,perms);
         }
         Refuses(() => PdfEngine.Sign(locked,rejected,new(0,.1,.6,.5,.1),rsa),"Se modificó un documento certificado.");
+        await CustomFeatures.RunAsync(root, rsa, Check, Refuses);
     }
 
     private static void SaveImage(BitmapSource image,string path)
@@ -173,11 +174,17 @@ internal static class Program
     private static void RenderInterface()
     {
         var app = new FirmaVisible.App.App(); app.InitializeComponent();
-        var window = new MainWindow();
+        var window = new MainWindow(new UserPreferencesStore(Path.Combine(root,"ui-preferences")));
         var content = (FrameworkElement)window.Content;
         content.Measure(new Size(1220,800)); content.Arrange(new WpfRectangle(0,0,1220,800)); content.UpdateLayout();
         var bitmap = new RenderTargetBitmap(1220,800,96,96,PixelFormats.Pbgra32); bitmap.Render(content);
         SaveImage(bitmap,Path.Combine(root,"windows-interface.png")); window.Close();
         Check(true,"Interfaz WPF renderizada.");
+        var editor = new AppearanceEditor(new SignatureDesign("Firmado por {nombre}\n{fecha}",CustomFeatures.ExampleImage(),true), "Tu nombre y apellidos", "Emisor del certificado");
+        var editorContent = (FrameworkElement)editor.Content;
+        editorContent.Measure(new Size(724,700)); editorContent.Arrange(new WpfRectangle(0,0,724,700)); editorContent.UpdateLayout();
+        var editorBitmap = new RenderTargetBitmap(724,700,96,96,PixelFormats.Pbgra32); editorBitmap.Render(editorContent);
+        SaveImage(editorBitmap,Path.Combine(root,"windows-appearance-editor.png")); editor.Close();
+        Check(true,"Editor WPF renderizado.");
     }
 }

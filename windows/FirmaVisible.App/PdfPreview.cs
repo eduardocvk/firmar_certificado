@@ -6,7 +6,7 @@ using Windows.Storage.Streams;
 
 namespace FirmaVisible.App;
 
-public sealed record RenderedPage(BitmapSource Image, int Count);
+public sealed record RenderedPage(BitmapSource Image, int Count, double Width, double Height);
 
 public static class PdfPreview
 {
@@ -28,6 +28,6 @@ public static class PdfPreview
         using var source = stream.AsStreamForRead();
         var image = new BitmapImage();
         image.BeginInit(); image.CacheOption = BitmapCacheOption.OnLoad; image.StreamSource = source; image.EndInit(); image.Freeze();
-        return new(image, (int)doc.PageCount);
+        return new(image, (int)doc.PageCount, page.Size.Width, page.Size.Height);
     }
 }

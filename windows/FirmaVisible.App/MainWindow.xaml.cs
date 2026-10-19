@@ -21,17 +21,30 @@ public partial class MainWindow : Window
     private Point start;
     private int dragMode;
     private double baseWidth = 800;
+    private double pageWidth = 600, pageHeight = 800;
+    private readonly UserPreferencesStore preferencesStore;
+    private UserPreferences preferences = UserPreferences.Default();
+    private bool initialized;
+    private string? lastSigned;
 
-    public MainWindow() { InitializeComponent(); Directory.CreateDirectory(session); }
+    public MainWindow() : this(new UserPreferencesStore()) { }
+    public MainWindow(UserPreferencesStore store)
+    {
+        preferencesStore = store; InitializeComponent(); Directory.CreateDirectory(session);
+        MaxHeight = SystemParameters.WorkArea.Height; MaxWidth = SystemParameters.WorkArea.Width;
+        try { preferences = store.Load(); }
+        catch (Exception ex) { StatusLabel.Text = $"No se pudo cargar el diseño guardado: {ex.Message} El archivo se conserva; puedes crear otro diseño."; }
+        TimestampCheck.IsChecked = preferences.UseTimestamp; initialized = true; UpdateDesignPreview();
+    }
     private CertificateIdentity? Identity => CertificateCombo.SelectedItem as CertificateIdentity;
 
     private async Task WorkAsync(string message, Func<Task> work)
     {
         if (busy) return;
-        busy = true; ActionsPanel.IsEnabled = NavigationPanel.IsEnabled = PageSurface.IsEnabled = false; StatusLabel.Text = message;
+        busy = true; Sidebar.IsEnabled = NavigationPanel.IsEnabled = PageSurface.IsEnabled = false; WorkingProgress.Visibility = Visibility.Visible; StatusLabel.Text = message;
         try { await work(); }
         catch (Exception ex) { StatusLabel.Text = "Operación no completada."; MessageBox.Show(this, ex.Message, "FirmaVisible", MessageBoxButton.OK, MessageBoxImage.Error); }
-        finally { busy = false; ActionsPanel.IsEnabled = NavigationPanel.IsEnabled = PageSurface.IsEnabled = true; }
+        finally { busy = false; Sidebar.IsEnabled = NavigationPanel.IsEnabled = PageSurface.IsEnabled = true; WorkingProgress.Visibility = Visibility.Collapsed; }
     }
 
     private async void OpenPdfClick(object sender, RoutedEventArgs e)
@@ -55,9 +68,10 @@ public partial class MainWindow : Window
 
     private void ShowPage(RenderedPage rendered)
     {
-        PageImage.Source = rendered.Image; pages = rendered.Count; box = null;
+        PageImage.Source = rendered.Image; pages = rendered.Count; pageWidth = rendered.Width; pageHeight = rendered.Height; box = null;
         PageSurface.Visibility = Visibility.Visible;
-        baseWidth = Math.Max(400, Math.Min(850, Viewport.ActualWidth - 48));
+        EmptyState.Visibility = Visibility.Collapsed;
+        FitPage();
         UpdateZoom(); DrawBox(); Viewport.ScrollToTop(); Viewport.ScrollToLeftEnd();
         PageLabel.Text = $"Página {page + 1} de {pages}";
         StatusLabel.Text = "Dibuja el recuadro donde quieres firmar. Vista previa orientativa del texto.";
@@ -101,7 +115,7 @@ public partial class MainWindow : Window
     }
 
     private void IdentityClick(object sender, RoutedEventArgs e) { if (Identity is { } identity) MessageBox.Show(this, identity.Details, "Identidad seleccionada"); }
-    private void CertificateChanged(object sender, SelectionChangedEventArgs e) { if (SignerPreview is not null) SignerPreview.Text = Identity?.Name ?? "Selecciona un certificado"; }
+    private void CertificateChanged(object sender, SelectionChangedEventArgs e) { if (initialized) UpdateDesignPreview(); }
     private void ForgetClick(object sender, RoutedEventArgs e) => ForgetIdentities();
     private void ForgetIdentities() { CertificateCombo.ItemsSource = null; foreach (var identity in identities) identity.Dispose(); identities.Clear(); }
 
@@ -113,13 +127,17 @@ public partial class MainWindow : Window
         var picker = new SaveFileDialog { Filter = "Documento PDF|*.pdf", DefaultExt = ".pdf", AddExtension = true, Title = "Guardar copia firmada", FileName = Path.GetFileNameWithoutExtension(originalPath) + "_firmado.pdf", InitialDirectory = Path.GetDirectoryName(originalPath), OverwritePrompt = false };
         if (picker.ShowDialog(this) != true) return;
         if (File.Exists(picker.FileName)) { MessageBox.Show(this, "Ese archivo ya existe. Elige un nombre nuevo para conservarlo."); return; }
-        if (MessageBox.Show(this, $"Vas a firmar el PDF con:\n\n{identity.Details}\n\nSe creará una copia. La fecha procede del dispositivo; no es un sello de tiempo.", "Autorizar firma", MessageBoxButton.OKCancel, MessageBoxImage.Information) != MessageBoxResult.OK) return;
+        bool timestamp = TimestampCheck.IsChecked == true; var design = preferences.Design;
+        string timeNotice = timestamp ? "Se solicitará un sello de tiempo a DigiCert enviando solo la huella de la firma, sin el PDF ni tus claves. Si falla, no se guardará una copia sin sello." : "Sin sello de tiempo. La fecha procede del ordenador.";
+        if (MessageBox.Show(this, $"Vas a firmar el PDF con:\n\n{identity.Details}\n\nSe creará una copia con tu diseño.\n{timeNotice}", "Autorizar firma", MessageBoxButton.OKCancel, MessageBoxImage.Information) != MessageBoxResult.OK) return;
         string source = input;
         await WorkAsync("Firmando y comprobando integridad…", async () =>
         {
-            await Task.Run(() => PdfEngine.Sign(source, picker.FileName, placement, identity));
+            var result = await Task.Run(() => { PdfEngine.Sign(source, picker.FileName, placement, identity, design, timestamp ? TimestampClient.DigiCert() : null); return PdfEngine.Verify(picker.FileName); });
+            lastSigned = picker.FileName; LastSignedButton.IsEnabled = true; LastSignedButton.Visibility = Visibility.Visible;
             StatusLabel.Text = $"Copia firmada: {picker.FileName}";
-            MessageBox.Show(this, $"Guardado en:\n{picker.FileName}\n\n{PdfEngine.VerificationNotice}", "PDF firmado", MessageBoxButton.OK, MessageBoxImage.Information);
+            string date = result.LatestTimestamp is { } time ? $"Hora acreditada por el sello: {time.ToLocalTime():dd/MM/yyyy HH:mm:ss zzz}" : "Sin sello de tiempo. Fecha declarada del ordenador.";
+            MessageBox.Show(this, $"Guardado en:\n{picker.FileName}\n\n{date}\n\n{PdfEngine.VerificationNotice}\nConsulta la confianza completa en tu visor habitual.", "PDF firmado", MessageBoxButton.OK, MessageBoxImage.Information);
         });
     }
 
@@ -129,13 +147,48 @@ public partial class MainWindow : Window
         await WorkAsync("Comprobando firmas…", async () => { var result = await Task.Run(() => PdfEngine.Verify(input)); StatusLabel.Text = "Comprobación terminada."; MessageBox.Show(this, result.ToString(), "Integridad de las firmas"); });
     }
     private void ResetBoxClick(object sender, RoutedEventArgs e) { if (input is not null) { box = [.1, .72, .55, .14]; DrawBox(); } }
+    private void OpenSignedClick(object sender, RoutedEventArgs e)
+    {
+        try { if (lastSigned is not null) Process.Start(new ProcessStartInfo(lastSigned) { UseShellExecute = true }); }
+        catch (Exception ex) { MessageBox.Show(this, ex.Message, "No se pudo abrir el PDF"); }
+    }
+    private async void CustomizeClick(object sender, RoutedEventArgs e)
+    {
+        var editor = new AppearanceEditor(preferences.Design, Identity?.Name ?? "Tu nombre y apellidos", IssuerName) { Owner = this };
+        if (editor.ShowDialog() != true || editor.Result is not { } design) return;
+        var next = new UserPreferences(design, TimestampCheck.IsChecked == true);
+        await WorkAsync("Guardando tu diseño…", async () =>
+        {
+            await Task.Run(() => preferencesStore.Save(next)); preferences = next; UpdateDesignPreview(); StatusLabel.Text = "Diseño guardado en tu perfil de Windows. Se reutilizará al abrir de nuevo la app.";
+        });
+    }
+    private async void TimestampChanged(object sender, RoutedEventArgs e)
+    {
+        if (!initialized || busy) return;
+        var next = new UserPreferences(preferences.Design, TimestampCheck.IsChecked == true);
+        await WorkAsync("Guardando preferencia de sellado…", async () => { await Task.Run(() => preferencesStore.Save(next)); preferences = next; StatusLabel.Text = next.UseTimestamp ? "Sello de tiempo activado. Requiere Internet; solo se envía una huella de la firma." : "Sello desactivado. Puedes firmar sin conexión con la fecha del ordenador."; });
+        initialized = false; TimestampCheck.IsChecked = preferences.UseTimestamp; initialized = true;
+    }
+    private string IssuerName => Identity?.Certificate.GetNameInfo(System.Security.Cryptography.X509Certificates.X509NameType.SimpleName, true) ?? "Emisor del certificado";
+    private void UpdateDesignPreview()
+    {
+        DesignSummary.Text = preferences.Design.HasImage ? string.IsNullOrWhiteSpace(preferences.Design.Template) ? "Solo imagen · diseño reutilizable" : "Texto e imagen · diseño reutilizable" : "Texto · diseño reutilizable";
+        DrawBox();
+    }
     private void AboutClick(object sender, RoutedEventArgs e)
     {
-        if (MessageBox.Show(this, "FirmaVisible 0.2 · C#/.NET y WPF\n\nMotor PDF: iText Community, Copyright Apryse Group NV.\nEsta aplicación Windows se distribuye bajo AGPL-3.0-or-later, sin garantía.\n\nEl código fuente y las instrucciones completas están disponibles en GitHub. ¿Abrirlos?", "Código fuente y licencias", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+        if (MessageBox.Show(this, "FirmaVisible 0.3 · C#/.NET y WPF\n\nMotor PDF: iText Community, Copyright Apryse Group NV.\nEsta aplicación Windows se distribuye bajo AGPL-3.0-or-later, sin garantía.\nFuente Noto Sans: SIL Open Font License 1.1.\n\nEl código fuente y las instrucciones completas están disponibles en GitHub. ¿Abrirlos?", "Código fuente y licencias", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
             Process.Start(new ProcessStartInfo("https://github.com/eduardocvk/firmar_certificado/tree/main/windows") { UseShellExecute = true });
     }
 
     private void ZoomChanged(object sender, RoutedPropertyChangedEventArgs<double> e) { if (PageImage is not null) UpdateZoom(); }
+    private void FitClick(object sender, RoutedEventArgs e) => FitPage();
+    private void FitPage()
+    {
+        if (PageImage.Source is not System.Windows.Media.Imaging.BitmapSource image) return;
+        baseWidth = Math.Max(100, Math.Min(Viewport.ActualWidth - 56, (Viewport.ActualHeight - 56) * image.PixelWidth / image.PixelHeight));
+        ZoomSlider.Value = 100; UpdateZoom();
+    }
     private void UpdateZoom()
     {
         if (PageImage.Source is not System.Windows.Media.Imaging.BitmapSource bitmap) return;
@@ -171,7 +224,8 @@ public partial class MainWindow : Window
         double w = PageSurface.Width, h = PageSurface.Height;
         if (!double.IsFinite(w) || !double.IsFinite(h)) return;
         Canvas.SetLeft(SelectionBox, box[0]*w); Canvas.SetTop(SelectionBox, box[1]*h); SelectionBox.Width = box[2]*w; SelectionBox.Height = box[3]*h;
-        Canvas.SetLeft(ResizeHandle, (box[0]+box[2])*w-6); Canvas.SetTop(ResizeHandle, (box[1]+box[3])*h-6);
+        SelectedDesignPreview.Update(preferences.Design, Identity?.Name ?? "Selecciona un certificado", IssuerName, box[2]*pageWidth, box[3]*pageHeight);
+        Canvas.SetLeft(ResizeHandle, (box[0]+box[2])*w-5); Canvas.SetTop(ResizeHandle, (box[1]+box[3])*h-5);
     }
     private void DeleteDocumentCopies() { if (displayInput is not null && displayInput != input && File.Exists(displayInput)) File.Delete(displayInput); if (input is not null && File.Exists(input)) File.Delete(input); }
     private void WindowClosing(object? sender, CancelEventArgs e)

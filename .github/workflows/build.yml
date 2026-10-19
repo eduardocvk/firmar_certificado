@@ -18,11 +18,15 @@ jobs:
         with:
           dotnet-version: '10.0.x'
       - name: Pruebas C#, CMS y visor nativo de Windows
+        env:
+          FIRMAVISIBLE_LIVE_TSA: 'true'
         shell: pwsh
         run: dotnet run --project windows/FirmaVisible.Tests/FirmaVisible.Tests.csproj -c Release -- artifacts/windows-tests
       - name: Verificación CMS independiente con OpenSSL
         shell: pwsh
-        run: ./scripts/verify-openssl.ps1 -Artifacts artifacts/windows-tests
+        run: |
+          ./scripts/verify-openssl.ps1 -Artifacts artifacts/windows-tests
+          ./scripts/verify-timestamp.ps1 -Artifacts artifacts/windows-tests
       - name: Publicar aplicación con .NET incluido
         shell: pwsh
         run: ./scripts/Build-Windows.ps1

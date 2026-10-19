@@ -10,16 +10,18 @@ using Org.BouncyCastle.X509;
 
 namespace FirmaVisible.Core;
 
-public sealed record Verification(int Count, bool LatestCoversWholeFile)
+public sealed record Verification(int Count, bool LatestCoversWholeFile, int TimestampCount = 0, DateTimeOffset? LatestTimestamp = null)
 {
     public override string ToString() => Count == 0 ? "El PDF no contiene firmas digitales." :
         $"{Count} firma(s).\n{PdfEngine.VerificationNotice}" +
+        $"\n{TimestampCount} sello(s) de tiempo comprobados criptográficamente; su confianza y revocación no se comprueban aquí." +
+        (LatestTimestamp is { } time ? $"\nHora del último sello: {time.ToLocalTime():dd/MM/yyyy HH:mm:ss zzz}" : "") +
         (LatestCoversWholeFile ? "" : "\nHay cambios posteriores a la última firma.");
 }
 
 public static class PdfEngine
 {
-    public const string VerificationNotice = "Integridad criptográfica comprobada. Confianza, revocación y cualificación no comprobadas. Sin sello de tiempo.";
+    public const string VerificationNotice = "Integridad criptográfica comprobada. Confianza del certificado firmante, revocación y cualificación no comprobadas.";
 
     public static Verification Verify(string path)
     {
@@ -27,17 +29,21 @@ public static class PdfEngine
         using var doc = new PdfDocument(reader);
         var util = new SignatureUtil(doc);
         var names = util.GetSignatureNames();
+        int stamps = 0; DateTimeOffset? latest = null;
         foreach (string name in names)
         {
             var pkcs7 = util.ReadSignatureData(name);
             if (!pkcs7.VerifySignatureIntegrityAndAuthenticity())
                 throw new InvalidDataException("La integridad de una firma del PDF no es correcta.");
+            latest = TimestampClient.VerifyEmbedded(util.GetSignatureDictionary(name).GetAsString(PdfName.Contents).GetValueBytes());
+            if (latest is not null) stamps++;
         }
-        return new(names.Count, names.Count > 0 && util.SignatureCoversWholeDocument(names[^1]));
+        return new(names.Count, names.Count > 0 && util.SignatureCoversWholeDocument(names[^1]), stamps, latest);
     }
 
-    public static void Sign(string input, string output, Placement placement, CertificateIdentity identity)
+    public static void Sign(string input, string output, Placement placement, CertificateIdentity identity, SignatureDesign? design = null, ITSAClient? tsa = null)
     {
+        design ??= SignatureDesign.Standard();
         identity.CheckUsable();
         if (StringComparer.OrdinalIgnoreCase.Equals(Path.GetFullPath(input), Path.GetFullPath(output)))
             throw new IOException("Guarda una copia; no sobrescribas el original.");
@@ -69,26 +75,29 @@ public static class PdfEngine
                     throw new ArgumentException("El recuadro debe medir al menos 100 × 42 puntos PDF. Amplíalo para que la firma sea legible.");
                 string fieldName = $"FirmaVisible_{Guid.NewGuid():N}";
                 DateTime now = DateTime.Now;
-                var appearance = new SignatureFieldAppearance(fieldName)
-                    .SetContent($"Firmado digitalmente\n{identity.Name}\n{now:dd/MM/yyyy HH:mm zzz}")
-                    .SetFontSize((float)Math.Min(9, (visualHeight - 8) / 4.4))
-                    .SetBackgroundColor(new DeviceRgb(242, 247, 255))
-                    .SetFontColor(new DeviceRgb(22, 48, 79))
-                    .SetBorder(new SolidBorder(new DeviceRgb(40, 83, 150), .7f));
                 signer.SetSignerProperties(new SignerProperties()
                     .SetFieldName(fieldName).SetPageNumber(placement.Page + 1)
                     .SetPageRect(placement.ToPdf(crop, page.GetRotation()))
-                    .SetClaimedSignDate(now).SetSignatureCreator("FirmaVisible .NET")
-                    .SetSignatureAppearance(appearance));
+                    .SetClaimedSignDate(now).SetSignatureCreator("FirmaVisible .NET"));
+                var art = SignatureArt.Draw(doc, (float)visualWidth, (float)visualHeight, design, identity.Name,
+                    identity.Certificate.GetNameInfo(System.Security.Cryptography.X509Certificates.X509NameType.SimpleName, true), new DateTimeOffset(now));
+                signer.GetSignatureField().SetSignatureAppearanceLayer(art);
+                // Follow iText's page-rotation-agnostic appearance example:
+                // disable its legacy squeeze transform and rotate the widget.
+#pragma warning disable CS0618
+                signer.GetSignatureField().SetIgnorePageRotation(false);
+#pragma warning restore CS0618
+                signer.GetSignatureField().GetFirstFormAnnotation().SetRotation(page.GetRotation());
                 doc.GetDocumentInfo().SetMoreInfo("License", "iText Community, Copyright Apryse Group NV; AGPL-3.0-or-later. Source: https://github.com/eduardocvk/firmar_certificado");
                 var parser = new X509CertificateParser();
                 IX509Certificate[] chain = identity.GetPublicChain()
                     .Select(c => (IX509Certificate)new X509CertificateBC(parser.ReadCertificate(c))).ToArray();
-                signer.SignDetached(new WindowsKeySignature(identity), chain, null, null, null, 32768, PdfSigner.CryptoStandard.CADES);
+                signer.SignDetached(new WindowsKeySignature(identity), chain, null, null, tsa, tsa is null ? 32768 : 65536, PdfSigner.CryptoStandard.CADES);
             }
             var result = Verify(temp);
             if (result.Count != previous.Count + 1 || !result.LatestCoversWholeFile)
                 throw new InvalidDataException("La firma generada no supera la comprobación de integridad.");
+            if (tsa is not null && result.LatestTimestamp is null) throw new InvalidDataException("Falta el sello de tiempo solicitado. No se ha guardado una copia sin él.");
             File.Move(temp, output, overwrite: false);
         }
         finally { if (File.Exists(temp)) File.Delete(temp); }

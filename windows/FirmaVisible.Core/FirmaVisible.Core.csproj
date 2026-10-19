@@ -3,5 +3,10 @@
   <ItemGroup>
     <PackageReference Include="itext" Version="9.8.0" />
     <PackageReference Include="itext.bouncy-castle-adapter" Version="9.8.0" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.13" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="../../core/src/main/resources/tsa/DigiCertTrustedRootG4.cer" LogicalName="FirmaVisible.TsaRoot.cer" />
+    <EmbeddedResource Include="../../pdf/src/main/resources/fonts/NotoSans-Regular.ttf" LogicalName="FirmaVisible.NotoSans.ttf" />
   </ItemGroup>
 </Project>

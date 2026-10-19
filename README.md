@@ -2,7 +2,7 @@
 
 Aplicaciones locales para **Windows 10/11 x64** y **Android 8 o posterior** que firman PDF con certificado digital y permiten elegir la posición de su apariencia visible.
 
-**Windows 0.2.0 en C#/.NET; Android 0.2.0. Versiones de pruebas.** Implementa firma con certificado y comprobación criptográfica, no una certificación jurídica del documento. No se ha probado con el certificado FNMT real del propietario del proyecto. Conviene empezar con un PDF de prueba y comprobar el resultado en Adobe Reader y en el sistema al que se enviará.
+**Windows 0.3.0 en C#/.NET; Android 0.2.0. Versiones de pruebas.** Implementa firma con certificado y comprobación criptográfica, no una certificación jurídica del documento. El usuario confirmó que Android firma correctamente con su certificado en la versión anterior; las nuevas funciones y la versión Windows necesitan su comprobación manual con FNMT. Conviene empezar con un PDF de prueba y comprobar el resultado en Adobe Reader y en el sistema al que se enviará.
 
 ## Descargar y utilizar
 
@@ -24,8 +24,9 @@ Los artefactos de Actions requieren iniciar sesión en GitHub y caducan según s
 1. Abre el PDF. La aplicación trabaja sobre una copia temporal del archivo abierto.
 2. Pulsa **Certificados de Windows** para usar un certificado instalado con su clave privada, o **Importar .p12 / .pfx** para abrir una copia protegida con contraseña. Un archivo `.cer` sin clave privada no sirve para firmar.
 3. Selecciona la página. Arrastra sobre ella para crear el recuadro; arrastra su interior para moverlo y su esquina inferior derecha para cambiar su tamaño.
-4. Pulsa **Firmar y guardar copia**, elige un nombre nuevo y autoriza el uso del certificado.
-5. Abre la copia firmada en Adobe Reader y consulta el panel de firmas.
+4. Personaliza texto e imagen, guarda tu diseño y activa o desactiva **Sello de tiempo**. El diseño y esa preferencia permanecen en el perfil de Windows, sin certificado ni contraseña.
+5. Pulsa **Firmar y guardar copia**, elige un nombre nuevo y autoriza la identidad y el sello.
+6. Abre la copia firmada en Adobe Reader y consulta el panel de firmas.
 
 ### Android
 
@@ -37,7 +38,7 @@ Los artefactos de Actions requieren iniciar sesión en GitHub y caducan según s
 6. Pulsa **Firmar y guardar copia** y confirma la identidad y el uso del sello.
 7. Guarda el archivo con el selector de Android o compártelo. El menú **•••** permite guardar o compartir el último resultado y comprobar el PDF abierto.
 
-La previsualización de texto es orientativa; el recuadro se coloca en las coordenadas seleccionadas. El PDF final contiene nombre del certificado y fecha con zona horaria. El mínimo de recuadro es 100 × 42 puntos PDF. Android limita la apertura a 100 MiB y el certificado importado a 4 MiB. Android admite imagen personalizada y texto de hasta 600 caracteres. La imagen se limita a 1200 píxeles de lado y se normaliza sin metadatos. Si el texto no cabe de forma legible, se pide ampliar el recuadro o acortarlo; no se trunca silenciosamente.
+La previsualización de texto es orientativa; el recuadro se coloca en las coordenadas seleccionadas. El PDF final contiene nombre del certificado y fecha con zona horaria. El mínimo de recuadro es 100 × 42 puntos PDF. Android limita la apertura a 100 MiB y el certificado importado a 4 MiB. Windows y Android admiten imagen personalizada y texto de hasta 600 caracteres. La imagen se limita a 1200 píxeles de lado y se normaliza sin metadatos. Si el texto no cabe de forma legible, se pide ampliar el recuadro o acortarlo; no se trunca silenciosamente.
 
 Algunos visores móviles omiten campos de firma. FirmaVisible prepara una copia exclusivamente de visualización para mostrar sus apariencias sin cambiar el original firmado. Para revisar el archivo exportado y sus firmas, utiliza un visor que las soporte, como Adobe Reader.
 
@@ -50,13 +51,13 @@ Algunos visores móviles omiten campos de firma. FirmaVisible prepara una copia 
 - No sobrescribe el original ni un archivo de salida existente en el motor de firma.
 - Rechaza PDF cifrados, formularios XFA, documentos certificados con DocMDP y campos con bloqueo de firma. Rechaza añadir firmas si existen cambios posteriores a la última firma.
 
-La comprobación de la aplicación verifica la **integridad de las revisiones firmadas y sus firmas CMS**. **No comprueba la cadena hasta una raíz de confianza, la revocación mediante OCSP/CRL, listas de confianza europeas ni la cualificación eIDAS. Windows no añade sello de tiempo. Android incorpora opcionalmente un sello RFC3161; no se añaden datos LT/LTA.** La fecha visible procede del reloj del dispositivo, incluso con sello: la hora acreditada por la TSA queda en el token y en la confirmación final. El estado de confianza debe comprobarse en un validador que disponga de la política y servicios correspondientes. Un certificado caducado en el futuro requiere evidencias temporales adecuadas para demostrar las circunstancias históricas de la firma.
+La comprobación de la aplicación verifica la **integridad de las revisiones firmadas y sus firmas CMS**. **No comprueba la cadena hasta una raíz de confianza, la revocación mediante OCSP/CRL, listas de confianza europeas ni la cualificación eIDAS. Windows y Android incorporan opcionalmente un sello RFC3161; no se añaden datos LT/LTA.** La fecha visible procede del reloj del dispositivo, incluso con sello: la hora acreditada por la TSA queda en el token y en la confirmación final. El estado de confianza debe comprobarse en un validador que disponga de la política y servicios correspondientes. Un certificado caducado en el futuro requiere evidencias temporales adecuadas para demostrar las circunstancias históricas de la firma.
 
 Usar un certificado FNMT en un archivo `.p12/.pfx` no convierte por sí solo la firma en cualificada. La categoría jurídica depende también del certificado, el dispositivo de creación y el proceso. La aceptación de un trámite depende de sus requisitos. Véanse [eIDAS](https://eur-lex.europa.eu/eli/reg/2014/910/) y [documentación europea de PAdES/DSS](https://ec.europa.eu/digital-building-blocks/DSS/webapp-demo/doc/dss-documentation.html).
 
 ## Privacidad
 
-No hay servidor propio, cuentas, analítica ni subida de PDF, claves o contraseñas. Android desactiva las copias de seguridad y utiliza Internet únicamente para el sello opcional de DigiCert: envía la huella SHA-256 de la firma y el nonce, nunca el PDF, el certificado del usuario, claves ni contraseñas. El servicio conoce la IP de conexión. El endpoint oficial usa HTTP, limitado por configuración de red a `timestamp.digicert.com`; el token se autentica mediante su firma y cadena a DigiCert G4 incorporada. Se comprueban nonce, huella, EKU y cadena, sin revocación ni declaración de sello cualificado. [Detalles](docs/ANDROID_0_2.md). En Windows se utilizan handles de claves del almacén del sistema; en Android, handles del `KeyChain` cuando se escoge esa vía. El sistema decide las protecciones de cada clave: importar un certificado no garantiza almacenamiento en hardware.
+No hay servidor propio, cuentas, analítica ni subida de PDF, claves o contraseñas. Ambas apps utilizan Internet únicamente para el sello opcional de DigiCert. Android desactiva las copias de seguridad. El sello envía la huella SHA-256 de la firma y el nonce, nunca el PDF, el certificado del usuario, claves ni contraseñas. El servicio conoce la IP de conexión. El endpoint oficial usa HTTP (en Android limitado por configuración de red a `timestamp.digicert.com`); el token se autentica mediante su firma y cadena a DigiCert G4 incorporada. Se comprueban nonce, huella, EKU y cadena, sin revocación ni declaración de sello cualificado. [Detalles](docs/ANDROID_0_2.md). En Windows se utilizan handles de claves del almacén del sistema; en Android, handles del `KeyChain` cuando se escoge esa vía. El sistema decide las protecciones de cada clave: importar un certificado no garantiza almacenamiento en hardware.
 
 Los certificados abiertos directamente permanecen en memoria durante la sesión y se pueden olvidar desde la interfaz. Las contraseñas se limpian de los buffers controlados por la app después de importar. Esto no garantiza el borrado de todas las copias internas de las bibliotecas o de la máquina virtual. Los PDF abiertos se copian a una carpeta temporal; Android conserva resultados firmados en la caché para permitir compartirlos. Puedes eliminar la caché desde los ajustes de Android. Guarda la copia final antes de cerrar la sesión. No subas tu certificado al repositorio ni lo incluyas en incidencias.
 

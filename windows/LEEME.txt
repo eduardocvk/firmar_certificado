@@ -1,21 +1,24 @@
-FirmaVisible Windows 0.2 — C#/.NET y WPF
+FirmaVisible para Windows 0.3 - C#/.NET y WPF
 
-Ejecutar FirmaVisible.exe conservando toda la carpeta. Incluye .NET; no requiere Java.
-Seleccionar un PDF y un certificado de Windows o archivo .p12/.pfx, colocar el recuadro y guardar una copia.
+Conserva toda esta carpeta y ejecuta FirmaVisible.exe. No necesita Java ni instalar .NET.
+La descarga de GitHub no tiene firma de editor y SmartScreen puede bloquearla.
+Cambiar de Java a C# no elimina ese aviso. No se modifica la seguridad de Windows.
+La distribución MSIX desde Microsoft Store está preparada, pendiente de identidad y aprobación.
+Instrucciones: https://github.com/eduardocvk/firmar_certificado/blob/main/windows/DISTRIBUCION.md
 
-ESTADO DE DISTRIBUCIÓN
-Esta preversión descargada de GitHub NO tiene firma de editor Authenticode.
-Windows puede mostrar «Editor desconocido» y bloquearla. Cambiar a C# no elimina ese control.
-No se han modificado certificados de confianza, SmartScreen ni políticas del equipo.
+1. Abre el PDF. Se trabaja con una copia temporal.
+2. Elige un certificado de Windows o abre tu .p12/.pfx con contraseña.
+3. Personaliza el texto y la imagen. Variables: {nombre}, {fecha}, {emisor}.
+   El diseño se guarda en tu perfil de Windows, sin certificado ni contraseña.
+4. Activa o desactiva Sello de tiempo. Con él, solo se envía una huella de la firma a DigiCert.
+   Requiere Internet. Si falla, no se guarda una copia sin el sello solicitado.
+5. Coloca el recuadro y ajusta página, posición y tamaño. Firma y guarda con nombre nuevo.
+6. Abre la copia en Adobe Reader y revisa su panel de firmas.
 
-Para probar como desarrollo local: compilar el código fuente con el SDK .NET 10 y scripts/Build-Windows.ps1.
-La compilación local no garantiza autorización si el equipo aplica políticas de control de aplicaciones.
-Para distribución sin el aviso de descarga: se ha preparado el empaquetado MSIX para Microsoft Store.
-Requiere una cuenta verificada y la aprobación de Microsoft. El MSIX previo a la Store no es directamente instalable.
+La fecha visible procede del ordenador. La hora acreditada por el sello aparece en la confirmación y en el PDF.
+Se comprueba integridad criptográfica; no se comprueban confianza del firmante, revocación ni cualificación.
+Sin evidencias LT/LTA ni declaración de firma/sello cualificado. Usa primero un PDF de prueba.
+No subas certificados, claves o contraseñas a GitHub.
 
-Fuente y guía de distribución: https://github.com/eduardocvk/firmar_certificado/tree/main/windows
-
-Los PDF se firman localmente. Sin sello de tiempo, sin comprobación de confianza o revocación y sin evidencias LT.
-Comprueba primero un PDF de prueba con tu FNMT en Adobe Reader y en el destinatario previsto.
-
-Licencia de esta aplicación Windows: AGPL-3.0-or-later. Consulta LICENSE.txt, ITEXT-LICENSE.md y THIRD_PARTY.txt.
+Código Windows bajo AGPL-3.0-or-later. Conserva LICENSE.txt, ITEXT-LICENSE.md, THIRD_PARTY.txt y licenses/.
+Fuente: https://github.com/eduardocvk/firmar_certificado
