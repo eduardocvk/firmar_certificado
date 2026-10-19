@@ -143,7 +143,9 @@ public final class PdfEngine {
         PDType0Font font;
         try(InputStream in=PdfEngine.class.getResourceAsStream("/fonts/NotoSans-Regular.ttf")) {
             if(in==null)throw new IOException("Falta la fuente de la firma visible.");
-            font=PDType0Font.load(doc,in,true);
+            // The Android PDFBox port does not preserve subset glyph mappings
+            // reliably in incremental signature appearances. Embed the full font.
+            font=PDType0Font.load(doc,in,false);
         }
         AppearanceLayout layout;
         try {

@@ -40,6 +40,8 @@ public final class MainActivity extends Activity {
     private TextView documentLabel;
     private LinearLayout rootLayout,workspacePanel;
     private ScrollView controlsPanel;
+    private Button viewMode;
+    private boolean focusMode;
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);PDFBoxResourceLoader.init(getApplicationContext());
@@ -52,10 +54,10 @@ public final class MainActivity extends Activity {
         controlsPanel=new ScrollView(this){@Override protected void onMeasure(int width,int height){if(getResources().getConfiguration().orientation!=android.content.res.Configuration.ORIENTATION_LANDSCAPE){int available=rootLayout.getHeight()>0?rootLayout.getHeight():getResources().getDisplayMetrics().heightPixels;height=View.MeasureSpec.makeMeasureSpec(Math.round(available*.49f),View.MeasureSpec.AT_MOST);}super.onMeasure(width,height);}};controlsPanel.setVerticalScrollBarEnabled(false);controlsPanel.addView(controls);root.addView(controlsPanel);workspacePanel=new LinearLayout(this);workspacePanel.setOrientation(LinearLayout.VERTICAL);root.addView(workspacePanel);
         LinearLayout header=row();LinearLayout heading=new LinearLayout(this);heading.setOrientation(LinearLayout.VERTICAL);
         TextView title=text("FirmaVisible",27);title.setTypeface(null,Typeface.BOLD);heading.addView(title);
-        TextView subtitle=text("Tu certificado. Tu firma.",12);subtitle.setTextColor(0xFF66758E);heading.addView(subtitle);header.addView(heading,new LinearLayout.LayoutParams(0,-2,1));
+        header.addView(heading,new LinearLayout.LayoutParams(0,-2,1));
         Button more=button("•••",this::moreMenu,false);more.setContentDescription("Guardar, compartir y comprobar firmas");header.addView(more,new LinearLayout.LayoutParams(dp(48),dp(48)));controls.addView(header);
         LinearLayout document=card();LinearLayout documentRow=row();
-        LinearLayout fileInfo=new LinearLayout(this);fileInfo.setOrientation(LinearLayout.VERTICAL);TextView fileHeading=text("DOCUMENTO",10);fileHeading.setTextColor(0xFF66758E);fileInfo.addView(fileHeading);
+        LinearLayout fileInfo=new LinearLayout(this);fileInfo.setOrientation(LinearLayout.VERTICAL);
         documentLabel=text("Abre el PDF que quieres firmar",13);documentLabel.setSingleLine(true);documentLabel.setEllipsize(android.text.TextUtils.TruncateAt.MIDDLE);fileInfo.addView(documentLabel);
         documentRow.addView(fileInfo,new LinearLayout.LayoutParams(0,-2,1));Button open=button("Abrir",()->pick(OPEN_PDF,"application/pdf"),false);documentRow.addView(open,new LinearLayout.LayoutParams(dp(72),dp(46)));document.addView(documentRow);
         LinearLayout certificateRow=row();identityLabel=text("Sin certificado",12);identityLabel.setSingleLine(true);identityLabel.setEllipsize(android.text.TextUtils.TruncateAt.MIDDLE);identityLabel.setTextColor(0xFF66758E);certificateRow.addView(identityLabel,new LinearLayout.LayoutParams(0,-2,1));
@@ -63,12 +65,11 @@ public final class MainActivity extends Activity {
         LinearLayout design=row();Button customize=button("Personalizar firma",this::editAppearance,false);customize.setTag("customize");design.addView(customize,new LinearLayout.LayoutParams(0,dp(46),1));
         Button place=button("Colocar recuadro",()->preview.resetBox(),false);design.addView(place,new LinearLayout.LayoutParams(0,dp(46),1));controls.addView(design);
         LinearLayout time=card();timeSwitch=new Switch(this);timeSwitch.setText("Sello de tiempo");timeSwitch.setTextSize(14);timeSwitch.setTextColor(0xFF172D47);timeSwitch.setPadding(0,dp(2),0,dp(2));timeSwitch.setMinHeight(dp(44));
-        timeSwitch.setChecked(getSharedPreferences("appearance",MODE_PRIVATE).getBoolean("timestamp",true));timeSwitch.setOnCheckedChangeListener((v,value)->getSharedPreferences("appearance",MODE_PRIVATE).edit().putBoolean("timestamp",value).apply());time.addView(timeSwitch);
-        TextView timeHelp=text("DigiCert · requiere Internet · envía solo una huella",10);timeHelp.setTextColor(0xFF66758E);time.addView(timeHelp);addCard(controls,time);
+        timeSwitch.setText("Sello de tiempo · Internet");timeSwitch.setTextSize(12);timeSwitch.setChecked(getSharedPreferences("appearance",MODE_PRIVATE).getBoolean("timestamp",true));timeSwitch.setOnCheckedChangeListener((v,value)->getSharedPreferences("appearance",MODE_PRIVATE).edit().putBoolean("timestamp",value).apply());time.addView(timeSwitch);addCard(controls,time);
         LinearLayout nav=row();Button previous=button("‹",()->{if(input!=null&&page>0){page--;render();}},false);previous.setContentDescription("Página anterior");nav.addView(previous,new LinearLayout.LayoutParams(dp(44),dp(44)));
         pageLabel=text("VISTA DEL DOCUMENTO",11);pageLabel.setGravity(Gravity.CENTER);nav.addView(pageLabel,new LinearLayout.LayoutParams(0,-2,1));
         Button next=button("›",()->{if(input!=null&&page+1<pages){page++;render();}},false);next.setContentDescription("Página siguiente");nav.addView(next,new LinearLayout.LayoutParams(dp(44),dp(44)));
-        Button fit=button("Ajustar",()->preview.resetZoom(),false);nav.addView(fit,new LinearLayout.LayoutParams(dp(72),dp(44)));workspacePanel.addView(nav);
+        Button fit=button("Ajustar",()->preview.resetZoom(),false);nav.addView(fit,new LinearLayout.LayoutParams(dp(66),dp(44)));viewMode=button("Ampliar",()->{focusMode=!focusMode;controlsPanel.setVisibility(focusMode?View.GONE:View.VISIBLE);viewMode.setText(focusMode?"Volver":"Ampliar");},false);viewMode.setTag("focus-view");nav.addView(viewMode,new LinearLayout.LayoutParams(dp(66),dp(44)));workspacePanel.addView(nav);
         preview=new PdfSelectionView(this);preview.setAppearance(appearance);preview.setTag("pdf-preview");workspacePanel.addView(preview,new LinearLayout.LayoutParams(-1,0,1));
         TextView help=text("Arrastra la firma · ajusta su esquina · pellizca para ampliar",10);help.setGravity(Gravity.CENTER);help.setTextColor(0xFF66758E);workspacePanel.addView(help);
         Button sign=button("Firmar y guardar copia  →",this::authorize,true);LinearLayout.LayoutParams primary=new LinearLayout.LayoutParams(-1,dp(54));primary.topMargin=dp(4);workspacePanel.addView(sign,primary);

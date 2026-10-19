@@ -57,8 +57,8 @@ public final class PdfSelectionView extends View {
         if(box!=null) {
             RectF r=new RectF(page.left+box[0]*page.width(),page.top+box[1]*page.height(),page.left+(box[0]+box[2])*page.width(),page.top+(box[1]+box[3])*page.height());
             signature.draw(canvas,r,box[2]*pageWidth,box[3]*pageHeight,signer,issuer);
-            paint.setColor(Color.rgb(28,75,140));paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(3);canvas.drawRect(r,paint);paint.setStyle(Paint.Style.FILL);
-            canvas.drawRect(r.right-10,r.bottom-10,r.right+10,r.bottom+10,paint);
+            paint.setColor(0xFF3155D9);paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(1.2f*getResources().getDisplayMetrics().density);canvas.drawRect(r,paint);paint.setStyle(Paint.Style.FILL);
+            canvas.drawCircle(r.right,r.bottom,4*getResources().getDisplayMetrics().density,paint);
         }
     }
     private float clamp(float value) { return Math.max(0,Math.min(1,value)); }

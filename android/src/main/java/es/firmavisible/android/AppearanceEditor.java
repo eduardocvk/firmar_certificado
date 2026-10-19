@@ -23,8 +23,8 @@ final class AppearanceEditor {
         LinearLayout content=new LinearLayout(owner);content.setOrientation(LinearLayout.VERTICAL);content.setPadding(dp(22),dp(22),dp(22),dp(24));content.setBackgroundColor(0xFFF5F7FC);
         TextView title=label("Tu firma visible",25);title.setTypeface(null,Typeface.BOLD);content.addView(title);
         content.addView(label("Diseña una apariencia que puedas reutilizar.",13));
-        sample=new View(owner){protected void onDraw(Canvas canvas){super.onDraw(canvas);canvas.drawColor(Color.WHITE);drawing.draw(canvas,new RectF(dp(8),dp(8),getWidth()-dp(8),getHeight()-dp(8)),320,104,name,issuer);}};
-        LinearLayout.LayoutParams sampleParams=new LinearLayout.LayoutParams(-1,dp(142));sampleParams.topMargin=dp(18);sampleParams.bottomMargin=dp(12);content.addView(sample,sampleParams);
+        sample=new View(owner){protected void onDraw(Canvas canvas){super.onDraw(canvas);canvas.drawColor(Color.WHITE);float width=getWidth()-dp(16),height=width*104/320;float top=(getHeight()-height)/2;drawing.draw(canvas,new RectF(dp(8),top,getWidth()-dp(8),top+height),320,104,name,issuer);}};
+        LinearLayout.LayoutParams sampleParams=new LinearLayout.LayoutParams(-1,dp(112));sampleParams.topMargin=dp(18);sampleParams.bottomMargin=dp(12);content.addView(sample,sampleParams);
         content.addView(label("VISTA PREVIA · se adapta al recuadro del PDF",10));
         content.addView(label("Texto de la firma",15));text=new EditText(owner);text.setTextSize(15);text.setMinLines(3);text.setGravity(Gravity.TOP);text.setText(initial.template);text.setFilters(new InputFilter[]{new InputFilter.LengthFilter(600)});text.setPadding(dp(12),dp(10),dp(12),dp(10));text.setBackground(background(Color.WHITE));content.addView(text,new LinearLayout.LayoutParams(-1,-2));
         LinearLayout tokens=new LinearLayout(owner);button(tokens,"+ Nombre",()->insert("{nombre}"));button(tokens,"+ Fecha",()->insert("{fecha}"));button(tokens,"+ Emisor",()->insert("{emisor}"));content.addView(tokens);
