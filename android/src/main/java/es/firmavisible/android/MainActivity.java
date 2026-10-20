@@ -42,7 +42,8 @@ public final class MainActivity extends Activity {
     private boolean refreshingStyles;
     private boolean timestampEnabled,confirmBeforeSigning,notifyAfterSaving;
     private TextView documentLabel;
-    private LinearLayout rootLayout,workspacePanel;
+    private LinearLayout rootLayout,workspacePanel,placementRow,signingRow;
+    private Button placeButton;
     private ScrollView controlsPanel;
     private Button viewMode;
     private boolean focusMode;
@@ -76,11 +77,14 @@ public final class MainActivity extends Activity {
         Button next=button("›",()->{if(input!=null&&page+1<pages){page++;render();}},false);next.setContentDescription("Página siguiente");nav.addView(next,new LinearLayout.LayoutParams(dp(44),dp(44)));
         Button fit=button("Ajustar",()->preview.resetZoom(),false);nav.addView(fit,new LinearLayout.LayoutParams(dp(66),dp(44)));viewMode=button("Ampliar",()->{focusMode=!focusMode;controlsPanel.setVisibility(focusMode?View.GONE:View.VISIBLE);viewMode.setText(focusMode?"Volver":"Ampliar");},false);viewMode.setTag("focus-view");nav.addView(viewMode,new LinearLayout.LayoutParams(dp(66),dp(44)));workspacePanel.addView(nav);
         preview=new PdfSelectionView(this);preview.setAppearance(appearance);preview.setTag("pdf-preview");workspacePanel.addView(preview,new LinearLayout.LayoutParams(-1,0,1));
-        LinearLayout placementRow=row();TextView help=text("Arrastra o ajusta el recuadro",10);help.setTextColor(0xFF66758E);placementRow.addView(help,new LinearLayout.LayoutParams(0,-2,1));Button place=button("Poner firma",()->{if(input!=null)preview.resetBox();else status.setText("Abre un PDF para colocar la firma.");},false);place.setTag("place-signature");placementRow.addView(place,new LinearLayout.LayoutParams(dp(112),dp(40)));workspacePanel.addView(placementRow);
-        Button sign=button("Firmar",this::authorize,true);sign.setTag("sign");LinearLayout.LayoutParams primary=new LinearLayout.LayoutParams(-1,dp(54));primary.topMargin=dp(4);workspacePanel.addView(sign,primary);
+        placementRow=row();TextView help=text("Arrastra o ajusta el recuadro",10);help.setTextColor(0xFF66758E);placementRow.addView(help,new LinearLayout.LayoutParams(0,-2,1));placeButton=button("Poner firma",()->{if(input!=null)preview.resetBox();else status.setText("Abre un PDF para colocar la firma.");},false);placeButton.setTag("place-signature");placementRow.addView(placeButton,new LinearLayout.LayoutParams(dp(112),dp(40)));workspacePanel.addView(placementRow);
+        signingRow=row();Button sign=button("Firmar",this::authorize,true);sign.setTag("sign");signingRow.addView(sign,new LinearLayout.LayoutParams(0,-1,1));LinearLayout.LayoutParams primary=new LinearLayout.LayoutParams(-1,dp(54));primary.topMargin=dp(4);workspacePanel.addView(signingRow,primary);
         status=text("",10);status.setTextColor(0xFF66758E);status.setMaxLines(2);workspacePanel.addView(status);refreshStyles();updateOrientation();setContentView(root);        Uri uri=incoming(getIntent());if(uri!=null)openPdf(uri);
     }
-    private void updateOrientation(){boolean landscape=getResources().getConfiguration().orientation==android.content.res.Configuration.ORIENTATION_LANDSCAPE;rootLayout.setOrientation(landscape?LinearLayout.HORIZONTAL:LinearLayout.VERTICAL);controlsPanel.setLayoutParams(new LinearLayout.LayoutParams(landscape?dp(290):-1,landscape?-1:-2));LinearLayout.LayoutParams params=new LinearLayout.LayoutParams(landscape?0:-1,landscape?-1:0,1);params.leftMargin=landscape?dp(14):0;workspacePanel.setLayoutParams(params);}
+    private void updateOrientation(){boolean landscape=getResources().getConfiguration().orientation==android.content.res.Configuration.ORIENTATION_LANDSCAPE;rootLayout.setOrientation(landscape?LinearLayout.HORIZONTAL:LinearLayout.VERTICAL);controlsPanel.setLayoutParams(new LinearLayout.LayoutParams(landscape?dp(270):-1,landscape?-1:-2));LinearLayout.LayoutParams params=new LinearLayout.LayoutParams(landscape?0:-1,landscape?-1:0,1);params.leftMargin=landscape?dp(12):0;workspacePanel.setLayoutParams(params);
+        if(landscape&&placeButton.getParent()!=signingRow){placementRow.removeView(placeButton);LinearLayout.LayoutParams place=new LinearLayout.LayoutParams(dp(108),-1);place.rightMargin=dp(6);signingRow.addView(placeButton,0,place);}
+        else if(!landscape&&placeButton.getParent()!=placementRow){signingRow.removeView(placeButton);placementRow.addView(placeButton,new LinearLayout.LayoutParams(dp(112),dp(40)));}placementRow.setVisibility(landscape?View.GONE:View.VISIBLE);
+    }
     @Override public void onConfigurationChanged(android.content.res.Configuration configuration){super.onConfigurationChanged(configuration);updateOrientation();}    private int dp(int value){return Math.round(value*getResources().getDisplayMetrics().density);}
     private TextView text(String value,int size){TextView t=new TextView(this);t.setText(value);t.setTextSize(size);t.setPadding(0,dp(3),0,dp(3));t.setTextColor(Color.rgb(25,47,74));return t;}
     private LinearLayout row(){LinearLayout row=new LinearLayout(this);row.setGravity(Gravity.CENTER_VERTICAL);return row;}
