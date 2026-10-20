@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:uap2="http://schemas.microsoft.com/appx/manifest/uap/windows10/2" xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3" xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities" IgnorableNamespaces="uap uap2 uap3 rescap">
-  <Identity Name="EduardoCallejo.FirmaPDF" Publisher="CN=D317ECBE-86A1-4610-9063-9C16F1256EC9" Version="1.0.0.0" ProcessorArchitecture="x64"/>
+  <Identity Name="EduardoCallejo.FirmaPDF" Publisher="CN=D317ECBE-86A1-4610-9063-9C16F1256EC9" Version="1.0.1.0" ProcessorArchitecture="x64"/>
   <Properties><DisplayName>FirmaPDF</DisplayName><PublisherDisplayName>Eduardo Callejo</PublisherDisplayName><Logo>Assets/StoreLogo.png</Logo></Properties>
   <Dependencies><TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.19041.0" MaxVersionTested="10.0.26100.0"/></Dependencies>
   <Resources><Resource Language="es-ES"/></Resources>

@@ -21,6 +21,20 @@ public sealed record Verification(int Count, bool LatestCoversWholeFile, int Tim
 
 public static class PdfEngine
 {
+    public static (double Width,double Height) PageSize(string path,int index)
+    {
+        using var reader=new PdfReader(path);
+        using var document=new PdfDocument(reader);
+        if(index<0||index>=document.GetNumberOfPages())throw new ArgumentOutOfRangeException(nameof(index));
+        var page=document.GetPage(index+1);var crop=page.GetCropBox();
+        return page.GetRotation()%180==0?(crop.GetWidth(),crop.GetHeight()):(crop.GetHeight(),crop.GetWidth());
+    }
+    public static bool HasSignatures(string path)
+    {
+        using var reader=new PdfReader(path);
+        using var document=new PdfDocument(reader);
+        return new SignatureUtil(document).GetSignatureNames().Count>0;
+    }
     public const string VerificationNotice = "Integridad criptográfica comprobada. Confianza del certificado firmante, revocación y cualificación no comprobadas.";
 
     public static Verification Verify(string path)

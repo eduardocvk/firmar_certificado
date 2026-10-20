@@ -41,6 +41,7 @@ internal static class WorkspaceFeatures
         {
             Complete(window.RestoreLastIdentityAsync());Complete(window.OpenDocumentsAsync(MainWindow.DroppedPdfPaths([first,extra,second])));
             check(window.Documents.Count==2&&window.ActiveDocument!.OriginalPath==second,"No se abren varios PDF en pestañas.");
+            check(((ListBox)window.FindName("DocumentList")).Items.Count==2&&((Button)window.FindName("VerifyButton")).Visibility==Visibility.Collapsed,"La lista no muestra los PDF abiertos o aparece Comprobar firmas en un PDF sin firmar.");
             var one=window.Documents[0];var two=window.Documents[1];
             Complete(window.OpenDocumentAsync(first));check(window.Documents.Count==2&&ReferenceEquals(window.ActiveDocument,one),"Un PDF ya abierto crea una pestaña duplicada.");
             refuses(()=>window.SignAllAsync().GetAwaiter().GetResult(),"Se permite firmar un lote sin recuadros.");
@@ -61,13 +62,31 @@ internal static class WorkspaceFeatures
             check(((Button)window.FindName("SignAllButton")).Content.ToString()=="Firmar"&&window.FindName("TimestampCheck") is null&&window.FindName("ConfirmBeforeCheck") is null,"Las opciones no se han trasladado a configuración.");
             Capture(window,Path.Combine(root,"windows-tabs-prepared.png"),1260,840);
             Capture(window,Path.Combine(root,"store-screenshot-signing.png"),1600,1000);
+            check(window.TwoPageMode&&((Grid)window.FindName("SecondPageSurface")).Visibility==Visibility.Visible,"No aparecen dos páginas cuando hay espacio.");
+            window.SelectVisiblePage(true);one.SetSelection([.12,.58,.4,.11]);window.SelectVisiblePage(true);
+            check(one.SelectionPage==1&&Math.Abs(one.SelectionPageWidth-595)<2&&((Border)window.FindName("SecondSelectionBox")).Visibility==Visibility.Visible&&((Border)window.FindName("SelectionBox")).Visibility==Visibility.Collapsed,"La firma en la página derecha usa la página, medidas o recuadro incorrectos.");
+            Capture(window,Path.Combine(root,"windows-two-pages.png"),1600,1000);
+            Complete(window.NavigateToPageAsync(1));
+            check(window.TwoPageMode&&one.CurrentPage==1&&((Border)window.FindName("SecondSelectionBox")).Visibility==Visibility.Visible,"La última página no conserva la vista doble ni la firma al navegar.");
+            Capture(window,Path.Combine(root,"windows-narrow-right-page.png"),1260,840);
+            check(!window.TwoPageMode&&one.CurrentPage==1&&((Border)window.FindName("SelectionBox")).Visibility==Visibility.Visible,"Al estrechar la ventana se pierde la página derecha seleccionada.");
+            Capture(window,Path.Combine(root,"store-screenshot-signing.png"),1600,1000);
             Complete(window.SignAllAsync());
             check(one.SignedOutput==BatchSigner.OutputPath(first)&&two.SignedOutput==BatchSigner.OutputPath(second),"El botón Firmar no guarda todas las copias _firmado.");
             check(PdfEngine.Verify(one.SignedOutput!).LatestCoversWholeFile&&PdfEngine.Verify(two.SignedOutput!).LatestCoversWholeFile,"Una copia de las pestañas no tiene firma íntegra.");
+            using(var pdf=new iText.Kernel.Pdf.PdfDocument(new iText.Kernel.Pdf.PdfReader(one.SignedOutput!)))
+            {
+                var field=iText.Forms.PdfAcroForm.GetAcroForm(pdf,false).GetAllFormFields().Values.Single();
+                check(pdf.GetPageNumber(field.GetWidgets()[0].GetPage())==2,"La firma dibujada a la derecha no se guarda en la segunda página.");
+            }
+            check(((Button)window.FindName("VerifyButton")).Visibility==Visibility.Visible,"No se ofrece comprobar la copia recién firmada.");
             Capture(window,Path.Combine(root,"windows-tabs-signed.png"),1260,840);
             Capture(window,Path.Combine(root,"store-screenshot-result.png"),1600,1000);
             var settings=new SettingsWindow(store.Load());Capture(settings,Path.Combine(root,"windows-settings.png"),768,750);
             check(((ListBox)settings.FindName("PresetList")).Items.Count==2&&settings.FindName("TimestampCheck") is CheckBox,"Configuración no contiene las firmas guardadas y el sello.");settings.Close();
+            Complete(window.OpenDocumentAsync(one.SignedOutput!));var signedInput=window.ActiveDocument!;
+            check(signedInput.HasExistingSignatures&&((Button)window.FindName("VerifyButton")).Visibility==Visibility.Visible,"No se detectan las firmas de un PDF que se vuelve a abrir.");
+            Complete(window.CloseDocumentAsync(signedInput));
             string twoCopy=two.InputPath;Complete(window.CloseDocumentAsync(one));
             check(window.Documents.Count==1&&File.Exists(twoCopy)&&!File.Exists(one.InputPath),"Cerrar una pestaña borra la copia de otra o deja la propia.");
             Complete(window.CloseDocumentAsync(two));check(window.Documents.Count==0&&window.ActiveDocument is null,"No se puede cerrar la última pestaña.");

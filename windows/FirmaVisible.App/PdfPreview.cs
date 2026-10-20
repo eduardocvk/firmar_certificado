@@ -28,6 +28,8 @@ public static class PdfPreview
         using var source = stream.AsStreamForRead();
         var image = new BitmapImage();
         image.BeginInit(); image.CacheOption = BitmapCacheOption.OnLoad; image.StreamSource = source; image.EndInit(); image.Freeze();
-        return new(image, (int)doc.PageCount, page.Size.Width, page.Size.Height);
+        // Windows renders in DIPs (96/in); layout and signing use PDF points (72/in).
+        var points=FirmaVisible.Core.PdfEngine.PageSize(path,pageIndex);
+        return new(image, (int)doc.PageCount, points.Width, points.Height);
     }
 }

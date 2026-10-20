@@ -12,6 +12,7 @@ public sealed class DocumentSession(string original, string input, string previe
     public string DirectoryPath { get; } = directory;
     public int CurrentPage { get; set; }
     public int PageCount { get; set; }
+    public bool HasExistingSignatures { get; init; }
     public double PageWidth { get; set; } = 600;
     public double PageHeight { get; set; } = 800;
     public int SelectionPage { get; private set; }
