@@ -20,7 +20,7 @@ public sealed class DocumentSession(string original, string input, string previe
     public double SelectionPageHeight { get; private set; }
     public SignaturePreset Preset { get; private set; } = preset;
     public string? SignedOutput { get; private set; }
-    public bool Ready => Selection is { Length:4 } s && s[2]*SelectionPageWidth>=100 && s[3]*SelectionPageHeight>=42;
+    public bool Ready => Selection is { Length:4 } s && s[2]*SelectionPageWidth>=SignatureArt.MinimumDimension && s[3]*SelectionPageHeight>=SignatureArt.MinimumDimension;
     public string Header => Path.GetFileName(OriginalPath) + (SignedOutput is not null ? "  ✓" : Ready ? "  •" : "");
     public void SetSelection(double[]? value)
     {
@@ -31,7 +31,7 @@ public sealed class DocumentSession(string original, string input, string previe
     public void MarkSigned(string path) { SignedOutput=path;Notify(); }
     public SigningJob Job(string? destination=null)
     {
-        if(!Ready || Selection is not {} s)throw new ArgumentException("Dibuja un recuadro de al menos 100 × 42 puntos en " + Path.GetFileName(OriginalPath));
+        if(!Ready || Selection is not {} s)throw new ArgumentException(SignatureArt.SizeNotice + " " + Path.GetFileName(OriginalPath));
         return new(InputPath,destination??BatchSigner.OutputPath(OriginalPath),new(SelectionPage,s[0],s[1],s[2],s[3]),Preset.Design);
     }
     public event PropertyChangedEventHandler? PropertyChanged;

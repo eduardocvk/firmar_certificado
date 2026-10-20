@@ -10,10 +10,12 @@ using iText.Kernel.Pdf.Xobject;
 
 namespace FirmaVisible.Core;
 
-public sealed record SignatureLayout(float FontSize, float TextX, float ImageWidth, float ImageHeight, IReadOnlyList<string> Lines);
+public sealed record SignatureLayout(float FontSize, float TextX, float ImageWidth, float ImageHeight, IReadOnlyList<string> Lines, float Padding = 6);
 
 public static class SignatureArt
 {
+    public const float MinimumDimension = 8;
+    public const string SizeNotice = "El recuadro es demasiado pequeño. Amplíalo un poco para mostrar la firma.";
     private static readonly Lazy<byte[]> FontBytes = new(() =>
     {
         using var stream = typeof(SignatureArt).Assembly.GetManifestResourceStream("FirmaVisible.NotoSans.ttf")!;
@@ -26,17 +28,18 @@ public static class SignatureArt
     public static SignatureLayout Layout(float width, float height, string text, bool image, float textSize = 8)
     {
         if (!float.IsFinite(textSize) || textSize < 4 || textSize > 18) throw new ArgumentException("El tamaño del texto debe estar entre 4 y 18 pt.");
-        if (width < 13 || height < 13) throw new ArgumentException("Amplía el recuadro para ver el diseño.");
+        if (!float.IsFinite(width) || !float.IsFinite(height) || width < MinimumDimension || height < MinimumDimension) throw new ArgumentException(SizeNotice);
         lock (FontLock)
         {
             var font = Metrics.Value;
             foreach (var rune in text.EnumerateRunes()) if (rune.Value != '\n' && !font.ContainsGlyph(rune.Value))
                 throw new ArgumentException($"La fuente no admite el carácter U+{rune.Value:X4}. Cámbialo o utiliza una imagen.");
-            float iw = image ? string.IsNullOrWhiteSpace(text) ? width - 12 : (width - 18) * .5f : 0;
-            float x = image && !string.IsNullOrWhiteSpace(text) ? iw + 12 : 6;
-            if (string.IsNullOrWhiteSpace(text)) return new(10, x, iw, height - 12, []);
-            float available = width - x - 6;
-            for (float size = textSize; size >= 4; size -= .25f)
+            float padding = Math.Min(6, Math.Min(width, height) * .08f);
+            float iw = image ? string.IsNullOrWhiteSpace(text) ? width - 2 * padding : (width - 3 * padding) * .5f : 0;
+            float x = image && !string.IsNullOrWhiteSpace(text) ? iw + 2 * padding : padding;
+            if (string.IsNullOrWhiteSpace(text)) return new(10, x, iw, height - 2 * padding, [], padding);
+            float available = width - x - padding;
+            for (float size = textSize; ; size = Math.Max(.5f, size - .25f))
             {
                 List<string> lines = []; bool fits = true;
                 foreach (string paragraph in text.Split('\n'))
@@ -56,9 +59,10 @@ public static class SignatureArt
                     }
                     lines.Add(line);
                 }
-                if (fits && lines.Count * size * 1.3f <= height - 12) return new(size, x, iw, height - 12, lines);
+                if (fits && lines.Count * size * 1.3f <= height - 2 * padding) return new(size, x, iw, height - 2 * padding, lines, padding);
+                if (size <= .5f) break;
             }
-            throw new ArgumentException("El texto no cabe de forma legible. Amplía el recuadro o acorta el texto.");
+            throw new ArgumentException("El texto no cabe ni reduciendo la letra. Amplía el recuadro o acorta el texto.");
         }
     }
 
@@ -77,12 +81,12 @@ public static class SignatureArt
             var image = ImageDataFactory.Create(png);
             float scale = Math.Min(layout.ImageWidth / image.GetWidth(), layout.ImageHeight / image.GetHeight());
             float w = image.GetWidth() * scale, h = image.GetHeight() * scale;
-            canvas.AddImageFittedIntoRectangle(image, new Rectangle(6 + (layout.ImageWidth - w) / 2, 6 + (layout.ImageHeight - h) / 2, w, h), false);
+            canvas.AddImageFittedIntoRectangle(image, new Rectangle(layout.Padding + (layout.ImageWidth - w) / 2, layout.Padding + (layout.ImageHeight - h) / 2, w, h), false);
         }
         if (layout.Lines.Count > 0)
         {
             var font = CreateFont(); font.SetSubset(false);
-            canvas.SetFillColor(new DeviceRgb(20, 41, 71)); float y = height - 6 - layout.FontSize;
+            canvas.SetFillColor(new DeviceRgb(20, 41, 71)); float y = height - layout.Padding - layout.FontSize;
             foreach (string line in layout.Lines)
             { canvas.BeginText().SetFontAndSize(font, layout.FontSize).MoveText(layout.TextX, y).ShowText(line).EndText(); y -= layout.FontSize * 1.3f; }
         }

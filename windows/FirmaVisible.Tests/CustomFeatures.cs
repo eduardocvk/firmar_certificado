@@ -75,7 +75,17 @@ internal static class CustomFeatures
         string rejected = Path.Combine(root, $"rejected-custom-{Guid.NewGuid():N}.pdf");
         refuses(() => PdfEngine.Sign(original, rejected, new(0, .1, .5, .5, .1), identity, design, new TimestampClient(_ => throw new IOException("Sin conexión de prueba"), authority.Root)), "Se produjo una firma sin el sello solicitado.");
         check(!File.Exists(rejected), "Se dejó un resultado de sellado fallido.");
-        refuses(() => PdfEngine.Sign(original, rejected, new(0, .1, .5, .18, .06), identity, new SignatureDesign(string.Concat(Enumerable.Repeat("Texto largo ", 49)), null, true)), "Se truncó silenciosamente un texto ilegible.");
+        var denseDesign=new SignatureDesign(string.Concat(Enumerable.Repeat("Texto largo ",49)),null,true);
+        var compactLayout=SignatureArt.Layout(80,24,denseDesign.Template,false);
+        check(compactLayout.FontSize<4&&string.Concat(compactLayout.Lines).Replace(" ","")==denseDesign.Template.Replace(" ",""),"El ajuste compacto pierde texto o impone el límite antiguo de 4 pt.");
+        PdfEngine.Sign(original,rejected,new(0,.1,.5,.13,.03),identity,denseDesign);
+        check(PdfEngine.Verify(rejected).LatestCoversWholeFile,"La firma compacta no es criptográficamente íntegra.");
+        var compactPage=await PdfPreview.RenderAsync(PdfEngine.PreparePreview(rejected,root),0);
+        Save(compactPage.Image,Path.Combine(root,"compact-signature.png"));
+        var imageLayout=SignatureArt.Layout(30,12,"",true);
+        check(imageLayout.ImageWidth>0&&imageLayout.ImageHeight>0,"La firma de imagen compacta no cabe.");
+        refuses(()=>SignatureArt.Layout(7,20,"Firma",false),"Se admite una selección accidental demasiado pequeña.");
+        refuses(()=>SignatureArt.Layout(8,8,string.Concat(Enumerable.Repeat("W",600)),true),"Se recorta texto que no cabe ni con el ajuste mínimo.");
         refuses(() => _ = new SignatureDesign("", null, false), "Se aceptó una apariencia vacía.");
         byte[] imprint = SHA256.HashData(new byte[] { 1, 2, 3 });
         refuses(() => new TimestampClient(bytes => authority.Respond(bytes, wrongNonce: true), authority.Root).GetTimeStampToken(imprint), "Se aceptó un nonce ajeno.");

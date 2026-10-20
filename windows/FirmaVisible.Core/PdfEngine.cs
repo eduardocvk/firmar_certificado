@@ -71,8 +71,8 @@ public static class PdfEngine
                 bool rotated = page.GetRotation() % 180 != 0;
                 double visualWidth = placement.Width * (rotated ? crop.GetHeight() : crop.GetWidth());
                 double visualHeight = placement.Height * (rotated ? crop.GetWidth() : crop.GetHeight());
-                if (visualWidth < 100 || visualHeight < 42)
-                    throw new ArgumentException("El recuadro debe medir al menos 100 × 42 puntos PDF. Amplíalo para que la firma sea legible.");
+                if (visualWidth < SignatureArt.MinimumDimension || visualHeight < SignatureArt.MinimumDimension)
+                    throw new ArgumentException(SignatureArt.SizeNotice);
                 string fieldName = $"FirmaPDF_{Guid.NewGuid():N}";
                 DateTime now = DateTime.Now;
                 signer.SetSignerProperties(new SignerProperties()

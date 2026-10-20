@@ -44,6 +44,12 @@ internal static class WorkspaceFeatures
             var one=window.Documents[0];var two=window.Documents[1];
             Complete(window.OpenDocumentAsync(first));check(window.Documents.Count==2&&ReferenceEquals(window.ActiveDocument,one),"Un PDF ya abierto crea una pestaña duplicada.");
             refuses(()=>window.SignAllAsync().GetAwaiter().GetResult(),"Se permite firmar un lote sin recuadros.");
+            one.SetSelection([.15,.55,.005,.005]);Complete(window.SelectDocumentAsync(one));
+            var liveSummary=(TextBlock)window.FindName("DesignSummary");
+            check(liveSummary.Text==SignatureArt.SizeNotice&&liveSummary.Foreground==Brushes.Firebrick,"El tamaño imposible no se avisa antes de firmar.");
+            one.SetSelection([.15,.55,.09,.025]);Complete(window.SelectDocumentAsync(one));
+            check(one.Ready&&liveSummary.Text.StartsWith("Texto ajustado a "),"El recuadro compacto no ajusta el texto ni avisa mientras se redimensiona.");
+            Capture(window,Path.Combine(root,"windows-compact-preview.png"),1260,840);
             one.SetSelection([.15,.55,.5,.15]);Complete(window.NavigateToPageAsync(1));
             check(one.CurrentPage==1&&one.SelectionPage==0&&one.Ready,"Cambiar de página borra el recuadro de firma.");
             check(((Border)window.FindName("SelectionBox")).Visibility==Visibility.Collapsed,"Se dibuja el recuadro en una página diferente.");

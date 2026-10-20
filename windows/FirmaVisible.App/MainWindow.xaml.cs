@@ -212,6 +212,16 @@ public partial class MainWindow : Window
     private async Task SignJobsAsync(IReadOnlyList<(DocumentSession Document,SigningJob Job)> requests)
     {
         if(Identity is not {} identity)throw new InvalidOperationException("Elige un certificado para firmar los PDF.");
+        // Validate the same resolved appearance used by the PDF writer before any batch starts.
+        foreach(var request in requests)
+        {
+            var document=request.Document;
+            double width=request.Job.Placement.Width*document.SelectionPageWidth;
+            double height=request.Job.Placement.Height*document.SelectionPageHeight;
+            // Direct API callers can supply placement without an interactive selection.
+            if(document.Selection is null) { width=request.Job.Placement.Width*document.PageWidth; height=request.Job.Placement.Height*document.PageHeight; }
+            SignatureArt.Layout((float)width,(float)height,request.Job.Design.Resolve(identity.Name,IssuerName,DateTimeOffset.Now),request.Job.Design.HasImage,request.Job.Design.TextSize);
+        }
         var jobs=requests.Select(r=>r.Job).ToArray();BatchSigner.CheckDestinations(jobs);
         bool timestamp=preferences.UseTimestamp;
         if(preferences.ConfirmBeforeSigning)
@@ -330,7 +340,17 @@ public partial class MainWindow : Window
         if (SelectionBox is null) return;
         if(BatchSummary is not null)UpdateBatchSummary();
         SelectionBox.Visibility = ResizeHandle.Visibility = box is null ? Visibility.Collapsed : Visibility.Visible;
-        if (box is null) return;
+        DesignSummary.Foreground=System.Windows.Media.Brushes.SlateGray;
+        if (box is null) { DesignSummary.Text="Elige un diseño y dibuja dónde colocarlo."; return; }
+        try
+        {
+            var design=ActiveDocument!.Preset.Design;
+            var layout=SignatureArt.Layout((float)(box[2]*pageWidth),(float)(box[3]*pageHeight),design.Resolve(Identity?.Name??"Tu nombre y apellidos",IssuerName,DateTimeOffset.Now),design.HasImage,design.TextSize);
+            bool reduced=layout.Lines.Count>0&&layout.FontSize<design.TextSize;
+            DesignSummary.Text=reduced?$"Texto ajustado a {layout.FontSize:0.##} pt para que quepa. Puedes ampliar el recuadro para leerlo mejor.":$"Preparada en la página {page+1}";
+            if(reduced)DesignSummary.Foreground=System.Windows.Media.Brushes.DarkGoldenrod;
+        }
+        catch(ArgumentException ex) { DesignSummary.Text=ex.Message;DesignSummary.Foreground=System.Windows.Media.Brushes.Firebrick; }
         double w = PageSurface.Width, h = PageSurface.Height;
         if (!double.IsFinite(w) || !double.IsFinite(h)) return;
         Canvas.SetLeft(SelectionBox, box[0]*w); Canvas.SetTop(SelectionBox, box[1]*h); SelectionBox.Width = box[2]*w; SelectionBox.Height = box[3]*h;

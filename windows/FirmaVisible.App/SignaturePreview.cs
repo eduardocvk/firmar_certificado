@@ -33,9 +33,9 @@ public sealed class SignaturePreview : FrameworkElement
             {
                 double scale = Math.Min(layout.ImageWidth / image.PixelWidth, layout.ImageHeight / image.PixelHeight);
                 double w = image.PixelWidth * scale, h = image.PixelHeight * scale;
-                context.DrawImage(image, new Rect(6 + (layout.ImageWidth - w) / 2, 6 + (layout.ImageHeight - h) / 2, w, h));
+                context.DrawImage(image, new Rect(layout.Padding + (layout.ImageWidth - w) / 2, layout.Padding + (layout.ImageHeight - h) / 2, w, h));
             }
-            double baseline = 6 + layout.FontSize;
+            double baseline = layout.Padding + layout.FontSize;
             foreach (string line in layout.Lines)
             {
                 var formatted = new FormattedText(line, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, Font, layout.FontSize,
