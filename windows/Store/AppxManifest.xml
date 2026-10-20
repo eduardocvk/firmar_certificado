@@ -1,12 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities" IgnorableNamespaces="uap rescap">
-  <Identity Name="FirmaPDF.StoreIdentityPending" Publisher="CN=StoreIdentityPending" Version="0.4.0.0" ProcessorArchitecture="x64"/>
-  <Properties><DisplayName>FirmaPDF</DisplayName><PublisherDisplayName>Pendiente de Partner Center</PublisherDisplayName><Logo>Assets/StoreLogo.png</Logo></Properties>
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:uap2="http://schemas.microsoft.com/appx/manifest/uap/windows10/2" xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3" xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities" IgnorableNamespaces="uap uap2 uap3 rescap">
+  <Identity Name="EduardoCallejo.FirmaPDF" Publisher="CN=D317ECBE-86A1-4610-9063-9C16F1256EC9" Version="1.0.0.0" ProcessorArchitecture="x64"/>
+  <Properties><DisplayName>FirmaPDF</DisplayName><PublisherDisplayName>Eduardo Callejo</PublisherDisplayName><Logo>Assets/StoreLogo.png</Logo></Properties>
   <Dependencies><TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.19041.0" MaxVersionTested="10.0.26100.0"/></Dependencies>
   <Resources><Resource Language="es-ES"/></Resources>
   <Applications>
     <Application Id="FirmaPDF" Executable="App\FirmaPDF.exe" EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements DisplayName="FirmaPDF" Description="Firma local de PDF con certificado digital y apariencia visible" BackgroundColor="#173B69" Square150x150Logo="Assets/Square150x150Logo.png" Square44x44Logo="Assets/Square44x44Logo.png"/>
+      <Extensions>
+        <uap:Extension Category="windows.fileTypeAssociation">
+          <uap3:FileTypeAssociation Name="firmapdf.pdf" Parameters="--open &quot;%1&quot;" MultiSelectModel="Document">
+            <uap:DisplayName>Documento PDF</uap:DisplayName>
+            <uap2:SupportedVerbs>
+              <uap3:Verb Id="firmar" Parameters="--open &quot;%1&quot;" MultiSelectModel="Document">Firmar con FirmaPDF</uap3:Verb>
+            </uap2:SupportedVerbs>
+            <uap:SupportedFileTypes><uap:FileType>.pdf</uap:FileType></uap:SupportedFileTypes>
+          </uap3:FileTypeAssociation>
+        </uap:Extension>
+      </Extensions>
     </Application>
   </Applications>
   <Capabilities><rescap:Capability Name="runFullTrust"/></Capabilities>

@@ -26,7 +26,7 @@ En **03 Tu firma visible** se elige un diseño por documento. **Poner firma** cr
 
 El selector permite varios PDF y la ventana acepta archivos arrastrados desde Explorer. Los duplicados se detectan por ruta completa sin distinguir mayúsculas. Se puede cerrar cada pestaña sin afectar a las demás. Las aperturas de la misma copia de la aplicación se transmiten a la ventana existente mediante una tubería local restringida al usuario de Windows.
 
-**Firmar** procesa todos los pendientes. Se requiere un recuadro de al menos 100 × 42 puntos por documento. Se usa el mismo certificado y sello elegido, con un diseño y posición independientes por PDF. El destino automático es `nombre_firmado.pdf` en la carpeta del original. No se sobrescribe ningún archivo y se mantienen los originales.
+**Firmar** procesa todos los pendientes. El recuadro admite espacios pequeños: se reducen los márgenes y el texto automáticamente, incluso por debajo de 4 pt. Mientras se redimensiona, la interfaz informa del tamaño ajustado y avisa si el contenido sigue sin caber. Solo se rechazan selecciones accidentales de menos de 8 puntos por lado o diseños que no caben ni a 0,5 pt, sin truncar el texto. Se usa el mismo certificado y sello elegido, con un diseño y posición independientes por PDF. El destino automático es `nombre_firmado.pdf` en la carpeta del original. No se sobrescribe ningún archivo y se mantienen los originales.
 
 Antes de iniciar se comprueban recuadros y colisiones. El motor firma y verifica todos los documentos en temporales de sus carpetas de destino; un fallo en esa preparación elimina esos temporales sin publicar copias. Al publicar se utiliza movimiento sin reemplazo. Si aparece un conflicto durante la publicación, se informa de las copias ya guardadas y se conservan; las restantes no se publican. No se afirma atomicidad de varias carpetas frente a cambios externos o errores de disco.
 
@@ -48,7 +48,7 @@ Sello opcional RFC3161 de DigiCert: se comprueban nonce, huella, firma/EKU y cad
 
 ## Firma del programa y distribución
 
-La firma de los PDF y la identidad del editor del ejecutable son independientes. La compilación actual no tiene Authenticode y puede ser bloqueada por Windows al descargarla. Se ha preparado MSIX para Store y un script para certificados Code Signing, pero faltan la identidad verificada y la revisión/publicación externa. [Pasos y alternativas](DISTRIBUCION.md).
+La firma de los PDF y la identidad del editor del ejecutable son independientes. La compilación actual no tiene Authenticode y puede ser bloqueada por Windows al descargarla. El manifiesto MSIX incorpora la identidad `EduardoCallejo.FirmaPDF`, el editor Eduardo Callejo y la asociación con PDF; están pendientes las pruebas de instalación MSIX, WACK y certificación/publicación externa. [Preparar el envío a Store](Store/ENVIO.md), [privacidad](PRIVACY.md) y [otras vías de distribución](DISTRIBUCION.md).
 
 ## Licencia
 

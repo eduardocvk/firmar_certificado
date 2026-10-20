@@ -61,4 +61,5 @@ public partial class SettingsWindow : Window
     }
     private void ExplorerClick(object sender,RoutedEventArgs e)=>WindowsActions.ShowExplorer(this);
     private void AboutClick(object sender,RoutedEventArgs e)=>WindowsActions.ShowLicenses(this);
+    private void PrivacyClick(object sender,RoutedEventArgs e)=>WindowsActions.ShowPrivacy(this);
 }

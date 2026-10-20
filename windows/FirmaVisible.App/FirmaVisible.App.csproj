@@ -17,6 +17,7 @@
     <Content Include="../../pdf/src/main/resources/fonts/OFL.txt" Link="licenses/NotoSans-OFL.txt" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../../core/src/main/resources/tsa/README.txt" Link="licenses/TSA-README.txt" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../LICENSE.txt" Link="LICENSE.txt" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../PRIVACY.md" Link="PRIVACY.md" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../THIRD_PARTY.txt" Link="THIRD_PARTY.txt" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../ITEXT-LICENSE.md" Link="ITEXT-LICENSE.md" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../licenses/**/*" Link="licenses/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />

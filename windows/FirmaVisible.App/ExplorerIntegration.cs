@@ -18,6 +18,7 @@ public sealed class ExplorerIntegration(RegistryKey classes)
     public bool IsRegisteredFor(string executable) => string.Equals(RegisteredCommand(), Command(executable), StringComparison.OrdinalIgnoreCase);
     public void Register(string executable)
     {
+        if(PackageEnvironment.IsPackaged)throw new InvalidOperationException("Windows gestiona la apertura de PDF de la versión Store. Usa «Abrir con → FirmaPDF».");
         executable = Path.GetFullPath(executable);
         if (!File.Exists(executable) || !string.Equals(Path.GetExtension(executable), ".exe", StringComparison.OrdinalIgnoreCase))
             throw new FileNotFoundException("No se encuentra FirmaPDF.exe. Conserva toda la carpeta de la aplicación.", executable);
@@ -32,6 +33,7 @@ public sealed class ExplorerIntegration(RegistryKey classes)
     }
     public void Remove(string executable)
     {
+        if(PackageEnvironment.IsPackaged)throw new InvalidOperationException("Windows gestiona esta integración al instalar o desinstalar FirmaPDF desde la Store.");
         string? command = RegisteredCommand();
         if (command is null) return;
         if (!IsRegisteredFor(executable)) throw new InvalidOperationException("El menú pertenece a otra copia de FirmaPDF. Quítalo desde esa copia o actívalo primero desde esta carpeta.");

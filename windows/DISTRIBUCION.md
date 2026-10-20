@@ -1,12 +1,12 @@
 # Cómo resolver «Editor desconocido»
 
-Cambiar de Java a C# no aporta una identidad de editor. La preversión actual de GitHub no tiene firma Authenticode: el propietario no dispone de certificado de firma de código ni cuenta de Store verificada. **No se ha eliminado el aviso de SmartScreen de esa descarga.** Los campos Company/Authors de .NET son metadatos del programa, no una firma ni una identidad verificada.
+Cambiar de Java a C# no aporta una identidad de editor. La preversión actual de GitHub no tiene firma Authenticode. El propietario ha facilitado su identidad de Partner Center y ya está incorporada al manifiesto Store, pero eso no firma los ejecutables ni sustituye la certificación. **No se ha eliminado el aviso de SmartScreen de la descarga ZIP.** Los campos Company/Authors de .NET son metadatos del programa, no una firma ni una identidad verificada.
 
 ## Vía recomendada: Microsoft Store con MSIX
 
 La Store firma los paquetes MSIX después de la certificación. No hace falta comprar ni gestionar un certificado para esta vía. El proceso tiene verificación de identidad y revisión de la aplicación. No equivale a subir el EXE sin firmar a la Store: la entrega debe hacerse como MSIX.
 
-1. Entra en [registro de Microsoft Store](https://developer.microsoft.com/es-es/microsoft-store/register) y crea una cuenta con el tipo adecuado al uso: particular para proyectos personales no relacionados con tu negocio/profesión, o empresa para los casos indicados por Microsoft.
+1. Entra por [storedeveloper.microsoft.com](https://storedeveloper.microsoft.com/) para el nuevo registro gratuito y crea una cuenta con el tipo adecuado al uso: particular para proyectos personales no relacionados con tu negocio/profesión, o empresa para los casos indicados por Microsoft. Los dos tipos tienen registro gratuito en el nuevo flujo; otras rutas pueden mostrar el antiguo con pago. Consulta las guías oficiales de [particulares](https://learn.microsoft.com/es-es/windows/apps/publish/whats-new-individual-developer) y [empresas](https://learn.microsoft.com/es-es/windows/apps/publish/whats-new-company-developer).
 2. Completa la verificación que te pida Microsoft y reserva el nombre de la aplicación.
 3. En Partner Center, abre la identidad de la aplicación. Copia `Package/Identity/Name`, `Package/Identity/Publisher` y `Package/Properties/PublisherDisplayName`. Son datos de empaquetado, no contraseñas ni claves privadas.
 4. Con Windows SDK y .NET SDK 10 instalados, compila y crea el paquete desde la raíz del repositorio:
@@ -23,6 +23,8 @@ La Store firma los paquetes MSIX después de la certificación. No hace falta co
 6. Una vez aprobado y publicado, instala desde Microsoft Store. Microsoft firma esa entrega. **El MSIX previo a la Store está sin firmar y no debe presentarse como instalable ni como solución directa a SmartScreen.**
 
 El CI prueba la estructura de empaquetado con una identidad ficticia marcada `ValidationOnly`. No publica ese paquete ni crea cuentas en nombre del usuario.
+
+Desde el 20 de octubre de 2026, el manifiesto contiene los valores reales facilitados por el propietario y el script puede ejecutarse sin repetirlos. [Guía de envío de FirmaPDF](Store/ENVIO.md). El MSIX empieza en `1.0.0.0`, porque Store exige un primer componente mayor que cero y reserva el cuarto para su uso; no se reutiliza la versión `0.4.0.0` de las pruebas anteriores.
 
 Fuentes: [opciones de firma de Microsoft](https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/code-signing-options), [registro](https://developer.microsoft.com/es-es/microsoft-store/register).
 

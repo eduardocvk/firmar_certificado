@@ -60,10 +60,12 @@ internal static class WorkspaceFeatures
             check(((ComboBox)window.FindName("SignatureCombo")).SelectedItem is SignaturePreset selected&&selected.Id=="a","El selector no muestra la firma de la pestaña activa.");
             check(((Button)window.FindName("SignAllButton")).Content.ToString()=="Firmar"&&window.FindName("TimestampCheck") is null&&window.FindName("ConfirmBeforeCheck") is null,"Las opciones no se han trasladado a configuración.");
             Capture(window,Path.Combine(root,"windows-tabs-prepared.png"),1260,840);
+            Capture(window,Path.Combine(root,"store-screenshot-signing.png"),1600,1000);
             Complete(window.SignAllAsync());
             check(one.SignedOutput==BatchSigner.OutputPath(first)&&two.SignedOutput==BatchSigner.OutputPath(second),"El botón Firmar no guarda todas las copias _firmado.");
             check(PdfEngine.Verify(one.SignedOutput!).LatestCoversWholeFile&&PdfEngine.Verify(two.SignedOutput!).LatestCoversWholeFile,"Una copia de las pestañas no tiene firma íntegra.");
             Capture(window,Path.Combine(root,"windows-tabs-signed.png"),1260,840);
+            Capture(window,Path.Combine(root,"store-screenshot-result.png"),1600,1000);
             var settings=new SettingsWindow(store.Load());Capture(settings,Path.Combine(root,"windows-settings.png"),768,750);
             check(((ListBox)settings.FindName("PresetList")).Items.Count==2&&settings.FindName("TimestampCheck") is CheckBox,"Configuración no contiene las firmas guardadas y el sello.");settings.Close();
             string twoCopy=two.InputPath;Complete(window.CloseDocumentAsync(one));
