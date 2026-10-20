@@ -9,7 +9,7 @@ public static class LaunchDocument
         var paths=args.Length>0&&args[0]=="--open"?args.Skip(1).ToArray():args;
         if(args.Length>0&&paths.Length==0)throw new ArgumentException("Indica uno o varios archivos PDF.");
         if(paths.Length>1000)throw new ArgumentException("Abre hasta 1000 PDF cada vez.");
-        return paths.Select(Validate).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        return paths.Select(ValidateAny).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
     }
     public static string? Parse(string[] args)
     {
@@ -20,10 +20,15 @@ public static class LaunchDocument
     }
     public static string Validate(string path)
     {
-        if (string.IsNullOrWhiteSpace(path)) throw new ArgumentException("Selecciona un archivo PDF.");
+        path=ValidateAny(path);
+        if (!string.Equals(Path.GetExtension(path), ".pdf", StringComparison.OrdinalIgnoreCase)) throw new ArgumentException("Esta acción requiere un PDF.");
+        return path;
+    }
+    public static string ValidateAny(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path)) throw new ArgumentException("Selecciona un archivo.");
         path = Path.GetFullPath(path);
-        if (!string.Equals(Path.GetExtension(path), ".pdf", StringComparison.OrdinalIgnoreCase)) throw new ArgumentException("FirmaPDF solo abre archivos PDF.");
-        if (!File.Exists(path)) throw new FileNotFoundException("No se encuentra el PDF seleccionado.", path);
+        if (!File.Exists(path)) throw new FileNotFoundException("No se encuentra el archivo seleccionado.", path);
         return path;
     }
 }

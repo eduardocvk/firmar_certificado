@@ -27,6 +27,7 @@ jobs:
         run: |
           ./scripts/verify-openssl.ps1 -Artifacts artifacts/windows-tests
           ./scripts/verify-timestamp.ps1 -Artifacts artifacts/windows-tests
+          ./scripts/verify-detached-openssl.ps1 -Artifacts artifacts/windows-tests
       - name: Publicar aplicación con .NET incluido
         shell: pwsh
         run: ./scripts/Build-Windows.ps1

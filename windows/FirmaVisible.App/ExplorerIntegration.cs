@@ -7,14 +7,16 @@ namespace FirmaVisible.App;
 /// <summary>Adds a PDF-only verb for the current user; never changes the default PDF reader.</summary>
 public sealed class ExplorerIntegration(RegistryKey classes)
 {
+    public static IReadOnlyList<string> SupportedExtensions { get; }=Array.AsReadOnly(new[]{".pdf",".doc",".docx",".xls",".xlsx",".ppt",".pptx",".odt",".ods",".odp",".xml",".txt",".csv",".jpg",".jpeg",".png",".zip",".7z",".rar",".p7s"});
     public const string VerbPath = @"SystemFileAssociations\.pdf\shell\FirmaPDF.Sign";
     public static string ExecutablePath => Path.Combine(AppContext.BaseDirectory, "FirmaPDF.exe");
     public static ExplorerIntegration ForCurrentUser() => new(Registry.CurrentUser);
     // The injected registry root keeps integration tests isolated from Explorer's real configuration.
     private const string ClassesPrefix = @"Software\Classes\";
     public static string Command(string executable) => $"\"{Path.GetFullPath(executable)}\" --open \"%1\"";
-    private string? RegisteredCommand()
-    { using var key = classes.OpenSubKey(ClassesPrefix + VerbPath + @"\command"); return key?.GetValue(null) as string; }
+    private static string ShellPath(string extension)=>@"SystemFileAssociations\"+extension+@"\shell\FirmaPDF.Sign";
+    private string? RegisteredCommand(string extension=".pdf")
+    { using var key = classes.OpenSubKey(ClassesPrefix + ShellPath(extension) + @"\command"); return key?.GetValue(null) as string; }
     public bool IsRegisteredFor(string executable) => string.Equals(RegisteredCommand(), Command(executable), StringComparison.OrdinalIgnoreCase);
     public void Register(string executable)
     {
@@ -22,9 +24,10 @@ public sealed class ExplorerIntegration(RegistryKey classes)
         executable = Path.GetFullPath(executable);
         if (!File.Exists(executable) || !string.Equals(Path.GetExtension(executable), ".exe", StringComparison.OrdinalIgnoreCase))
             throw new FileNotFoundException("No se encuentra FirmaPDF.exe. Conserva toda la carpeta de la aplicación.", executable);
-        using (var key = classes.CreateSubKey(ClassesPrefix + VerbPath))
+        foreach(string extension in SupportedExtensions)
         {
-            key.SetValue(null, "Firmar con FirmaPDF");
+            using var key=classes.CreateSubKey(ClassesPrefix+ShellPath(extension));
+            key.SetValue(null,extension==".p7s"?"Comprobar firma con FirmaPDF":"Firmar con FirmaPDF");
             key.SetValue("Icon", $"\"{executable}\",0");
             key.SetValue("MultiSelectModel", "Document");
             using var command = key.CreateSubKey("command"); command.SetValue(null, Command(executable));
@@ -37,7 +40,8 @@ public sealed class ExplorerIntegration(RegistryKey classes)
         string? command = RegisteredCommand();
         if (command is null) return;
         if (!IsRegisteredFor(executable)) throw new InvalidOperationException("El menú pertenece a otra copia de FirmaPDF. Quítalo desde esa copia o actívalo primero desde esta carpeta.");
-        classes.DeleteSubKeyTree(ClassesPrefix + VerbPath, throwOnMissingSubKey: false);
+        foreach(string extension in SupportedExtensions)
+            if(string.Equals(RegisteredCommand(extension),Command(executable),StringComparison.OrdinalIgnoreCase))classes.DeleteSubKeyTree(ClassesPrefix+ShellPath(extension),throwOnMissingSubKey:false);
         NotifyExplorer();
     }
     [DllImport("shell32.dll")]

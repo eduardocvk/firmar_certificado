@@ -10,6 +10,8 @@ public sealed class DocumentSession(string original, string input, string previe
     public string InputPath { get; } = input;
     public string PreviewPath { get; } = preview;
     public string DirectoryPath { get; } = directory;
+    public bool IsPdf=>BatchSigner.IsPdf(OriginalPath);
+    public bool IsSignatureFile=>string.Equals(Path.GetExtension(OriginalPath),".p7s",StringComparison.OrdinalIgnoreCase);
     public int CurrentPage { get; set; }
     public int PageCount { get; set; }
     public bool HasExistingSignatures { get; init; }
@@ -21,17 +23,18 @@ public sealed class DocumentSession(string original, string input, string previe
     public double SelectionPageHeight { get; private set; }
     public SignaturePreset Preset { get; private set; } = preset;
     public string? SignedOutput { get; private set; }
-    public bool Ready => Selection is { Length:4 } s && s[2]*SelectionPageWidth>=SignatureArt.MinimumDimension && s[3]*SelectionPageHeight>=SignatureArt.MinimumDimension;
+    public bool Ready => !IsPdf?!IsSignatureFile:Selection is { Length:4 } s && s[2]*SelectionPageWidth>=SignatureArt.MinimumDimension && s[3]*SelectionPageHeight>=SignatureArt.MinimumDimension;
     public string Header => Path.GetFileName(OriginalPath) + (SignedOutput is not null ? "  ✓" : Ready ? "  •" : "");
     public void SetSelection(double[]? value)
     {
         Selection=value?.ToArray();SelectionPage=CurrentPage;SelectionPageWidth=PageWidth;SelectionPageHeight=PageHeight;SignedOutput=null;Notify();
     }
     public void SetPreset(SignaturePreset value)
-    { bool same=value.Id==Preset.Id&&ReferenceEquals(value.Design,Preset.Design);Preset=value;if(!same)SignedOutput=null;Notify(); }
+    { bool same=value.Id==Preset.Id&&ReferenceEquals(value.Design,Preset.Design);Preset=value;if(!same&&IsPdf)SignedOutput=null;Notify(); }
     public void MarkSigned(string path) { SignedOutput=path;Notify(); }
     public SigningJob Job(string? destination=null)
     {
+        if(!IsPdf) { if(IsSignatureFile)throw new ArgumentException("Abre el archivo original para crear una firma; este .p7s sirve para comprobarla.");return new(InputPath,destination??BatchSigner.OutputPath(OriginalPath),null,Preset.Design); }
         if(!Ready || Selection is not {} s)throw new ArgumentException(SignatureArt.SizeNotice + " " + Path.GetFileName(OriginalPath));
         return new(InputPath,destination??BatchSigner.OutputPath(OriginalPath),new(SelectionPage,s[0],s[1],s[2],s[3]),Preset.Design);
     }

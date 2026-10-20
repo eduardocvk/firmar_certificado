@@ -1,13 +1,13 @@
-FirmaPDF para Windows 0.4 - C#/.NET y WPF
+FirmaPDF para Windows 0.5 - C#/.NET y WPF
 
 Conserva toda la carpeta y abre FirmaPDF.exe. No necesita Java ni instalar .NET.
 
-1. Abre varios PDF o arrástralos a la ventana. Cada uno se abre en una pestaña.
+1. Abre PDF y otros archivos o arrástralos a la ventana. Cada uno se abre en una pestaña.
 2. Elige el certificado. Se preselecciona el último usado si sigue disponible en Windows.
 3. La rueda junto al título abre Configuración: varias firmas personalizadas, opciones, sello de tiempo, menú del botón derecho y licencias.
 4. Elige un diseño en «03 Tu firma visible» y dibuja su recuadro; también puedes pulsar «Poner firma».
 5. Cada pestaña recuerda página, recuadro y diseño. Pon un recuadro en cada PDF.
-6. «Firmar» procesa todos los pendientes y guarda nombre_firmado.pdf junto a cada original. No sobrescribe archivos. Si un destino ya existe, muévelo o renómbralo antes.
+6. «Firmar» procesa todos los pendientes. Guarda nombre_firmado.pdf para PDF y archivo.ext.p7s para otros archivos. Conserva el original junto a su .p7s. No sobrescribe archivos.
 7. Abre la copia firmada y revisa el panel de firmas en tu visor habitual.
 
 Los originales no se modifican. El diseño anterior se migra como «Mi firma».
@@ -20,9 +20,11 @@ En Windows 11 aparece en Mostrar más opciones. Conserva esta carpeta; si la mue
 El sello de tiempo es opcional. Solo se envía una huella de cada firma a DigiCert, nunca el PDF ni la clave.
 Un fallo durante la firma o el sellado descarta las copias temporales del lote. Si Windows impide guardar una copia después de guardar otras, se informa de los resultados parciales y se conservan los ya guardados.
 La fecha visible es la del equipo. El sello acreditado se consulta en el panel de firmas.
-Se verifica integridad, sin afirmar confianza del firmante, revocación, cualificación ni evidencias LT/LTA.
+Comprobar certificado y Comprobar firmas consultan confianza, vigencia y revocación con Windows. Pueden requerir Internet y enviar datos públicos del certificado a su emisor. Un estado desconocido no equivale a válido. La evaluación es actual: no acredita cualificación ni validez histórica, ni incorpora evidencias LT/LTA.
 No se guardan contraseñas ni claves. Los .p12/.pfx no instalados en Windows deben abrirse con contraseña.
 
 La descarga de GitHub sigue sin firma de editor: SmartScreen puede bloquearla. No se modifica la seguridad de Windows.
 Windows usa iText Community y se distribuye bajo AGPL-3.0-or-later. Conserva las licencias incluidas.
 Código fuente: https://github.com/eduardocvk/firmar_certificado
+
+Otros archivos: firma externa CMS/CAdES separada, hasta 100 MiB; .p7s hasta 4 MiB. No es firma nativa de Office ni XAdES/FacturaE. No se convierten ni ejecutan los originales.

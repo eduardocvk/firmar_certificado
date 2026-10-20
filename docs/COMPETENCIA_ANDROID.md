@@ -1,0 +1,15 @@
+# Comparativa de aplicaciones Android con certificado digital
+
+Consulta de fuentes públicas oficiales: 20 de octubre de 2026. Esta revisión compara funciones anunciadas, no acredita que las aplicaciones hayan superado una prueba práctica con nuestro certificado FNMT. No se han instalado ni proporcionado certificados a terceros.
+
+La función buscada combina certificado personal, PDF firmado criptográficamente, colocación de una apariencia visible y personalización persistente con texto e imagen. Una firma dibujada o una imagen pegada, por sí sola, no equivale a esa combinación.
+
+| Aplicación | Lo que confirma su fuente | Qué falta contrastar |
+|---|---|---|
+| [Firma Certificado Digital PDF, FirmaDNI/MultiApps](https://play.google.com/store/apps/details?id=pdf.digital.signature&hl=es) | Certificados instalados en Android y combinación de firma manual con certificado; anuncia PDF y Word. Contiene anuncios y compras integradas. | La ficha no permite confirmar todo el editor de imagen/texto, diseños guardados, transparencia ni sello de tiempo. Las reseñas sobre funciones concretas no sustituyen una prueba actual. |
+| [SIGNply Wallet, Edatalia](https://play.google.com/store/apps/details?id=com.edatalia.signply.wallet&hl=es) | Certificados personales, firma local, importación desde dispositivo/nube. Su [web](https://signply.com/signply-wallet/) la anuncia gratuita, sin anuncios. | No queda documentada en esas fichas la personalización completa de texto e imagen ni su posición libre. No se confunde con SIGNply de firma manuscrita o con el SDK. |
+| [Firm@, CQe-Solutions](https://play.google.com/store/apps/details?id=com.cqesolutions.firma&hl=es) | Firma de PDF con DNIe o certificado digital. La ficha indica anuncios y compras integradas. | Confirmar apariencia, importación de imagen, texto editable y persistencia. |
+| [gmPAdES](https://play.google.com/store/apps/details?id=com.gmeana.pdf) | PDF PAdES con certificados reconocidos, PFX, contenedor Android y DNIe/NFC. | Requiere usuario de sus plataformas o licencia de modo local. La ficha no acredita el mismo editor de apariencia. |
+| [Personal Signer](https://personalsigner.com/) | Su web anuncia Android/iOS, certificado propio, sello de tiempo y una firma visible que se mueve y redimensiona en cualquier página. | No se ha confirmado una ficha actual accesible de Google Play, su precio, mantenimiento ni editor de imagen/texto. Se considera candidato anunciado, no alternativa instalada y verificada. |
+
+Hay competencia real para firmar con certificado en Android. No hay base para afirmar que FirmaPDF sea la única con firma visible, ni para asegurar que ninguna otra reúna sus funciones. La comparación pendiente más útil consiste en probar la combinación completa con certificados sintéticos, revisar el PDF resultante y comprobar formato, apariencia y conservación de firmas previas. Las afirmaciones comerciales de firma «cualificada» o «plenamente válida» de un proveedor no se trasladan automáticamente a cualquier certificado o método de uso.

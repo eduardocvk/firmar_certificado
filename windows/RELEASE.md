@@ -1,3 +1,12 @@
+FirmaPDF Windows 0.5.0: otros archivos y comprobación de confianza y revocación.
+
+- Firma de Word, Excel, XML, imágenes, ZIP y otros archivos como CMS/CAdES separada (.p7s), sin modificar el original. Ambos archivos son necesarios para comprobarla. Hasta 100 MiB por original y 4 MiB por contenedor de firma.
+- Lotes mixtos de PDF y archivos generales. Solo los PDF necesitan recuadro; los demás no se ejecutan ni se convierten. No se implementa firma nativa de Office ni XAdES/FacturaE.
+- Comprobar certificado y Comprobar firmas: cadena de confianza de Windows, vigencia actual y revocación en línea (CRL/OCSP, con caché). Los resultados desconocidos se distinguen de los válidos y los revocados. Sin instalar raíces de confianza ni afirmar validación histórica, cualificación eIDAS o LT/LTA.
+- Los PDF conservan pestañas, dos páginas en paralelo cuando hay espacio, diseños guardados y firma visible. Se corrigen las unidades del visor para utilizar puntos PDF.
+- Menú contextual para documentos y .p7s; asociaciones declaradas en el MSIX. Política de privacidad actualizada con las consultas de certificados.
+- 189 comprobaciones locales, incluidas tres situaciones de revocación con una CA y un servidor CRL de prueba aislados; verificación CAdES independiente mediante OpenSSL.
+- Paquete para Microsoft Store 1.1.0.0 con identidad EduardoCallejo.FirmaPDF. Pendiente instalación MSIX, WACK y certificación; la entrega ZIP no adquiere firma de editor.
 FirmaPDF Windows 0.4.0: pestañas, firmas guardadas y firma de todos los PDF en un paso.
 
 - Rueda de configuración junto al título. Allí se gestionan las firmas de texto e imagen, las opciones de firma, el sello, el menú del botón derecho y las licencias.

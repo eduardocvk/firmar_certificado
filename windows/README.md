@@ -34,6 +34,16 @@ El apartado **01 Documentos** lista todos los PDF abiertos y permite seleccionar
 
 Antes de iniciar se comprueban recuadros y colisiones. El motor firma y verifica todos los documentos en temporales de sus carpetas de destino; un fallo en esa preparación elimina esos temporales sin publicar copias. Al publicar se utiliza movimiento sin reemplazo. Si aparece un conflicto durante la publicación, se informa de las copias ya guardadas y se conservan; las restantes no se publican. No se afirma atomicidad de varias carpetas frente a cambios externos o errores de disco.
 
+## Otros archivos y comprobación de certificados (0.5)
+
+**Abrir archivos** y el arrastre admiten también Word, Excel, PowerPoint, XML, texto, imágenes, ZIP y otros archivos de hasta 100 MiB. Se tratan como datos y no se ejecutan ni convierten. **Firmar** genera `archivo.ext.p7s`, una firma separada CMS/CAdES-BES con SHA-256, referencia ESSCertIDv2 y sello RFC3161 opcional. El archivo original no cambia; debe conservarse junto al `.p7s`. No es una firma nativa de Office ni una firma XAdES/FacturaE dentro del XML.
+
+Se pueden mezclar PDF y otros formatos en el mismo lote: solo los PDF necesitan recuadro. Las firmas `.p7s` se abren para comprobarse, no se añaden como originales pendientes. Al comprobarlas se usa el original adyacente con el mismo nombre o se pide seleccionarlo. Se rechazan contenido cambiado, firma alterada y referencia a otro certificado. El límite del contenedor `.p7s` es 4 MiB.
+
+**Comprobar certificado** evalúa el certificado seleccionado. **Comprobar firmas** comprueba primero integridad y después cada firmante y, si existe, la autoridad de sellado. La confianza usa los almacenes de Windows; la revocación usa su motor de cadena con modo en línea, consulta CRL/OCSP y puede utilizar caché. El informe separa cadena aceptada/no aceptada, vigencia y revocación comprobada/revocada/desconocida. Una consulta fallida nunca aparece como certificado válido. No se instalan raíces ni se ignoran errores de cadena.
+
+La fecha de evaluación es la actual, también para certificados de TSA: no se afirma validez histórica, cualificación eIDAS, comprobación de listas europeas de confianza ni conservación LT/LTA. Los botones de comprobación pueden enviar datos públicos de certificados a sus emisores; nunca el documento o la clave. La firma por sí misma conserva la comprobación criptográfica local y no hace automáticamente una consulta en línea de revocación. Consulta [privacidad](PRIVACY.md).
+
 ## Abrir desde el botón derecho
 
 En **Configuración → Menú del botón derecho… → Activar menú** se registra «Firmar con FirmaPDF» para los PDF del usuario actual, sin administrador ni cambio del lector habitual. En Windows 11 está en «Mostrar más opciones». Se puede retirar desde esa misma ventana. Si cambia la ubicación de la carpeta, actívalo desde la nueva copia. Los comandos `--register-context-menu` y `--unregister-context-menu` siguen disponibles, y `--open` admite varias rutas PDF. La futura distribución por Store requiere su asociación de archivos en el paquete; el registro actual corresponde al ZIP portable.

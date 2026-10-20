@@ -90,6 +90,17 @@ internal static class WorkspaceFeatures
             string twoCopy=two.InputPath;Complete(window.CloseDocumentAsync(one));
             check(window.Documents.Count==1&&File.Exists(twoCopy)&&!File.Exists(one.InputPath),"Cerrar una pestaña borra la copia de otra o deja la propia.");
             Complete(window.CloseDocumentAsync(two));check(window.Documents.Count==0&&window.ActiveDocument is null,"No se puede cerrar la última pestaña.");
+            string xml=Path.Combine(folder,"Documento XML.xml"),mixedPdf=Path.Combine(folder,"PDF mixto.pdf");File.WriteAllText(xml,"<prueba>Sin datos personales</prueba>");File.Copy(first,mixedPdf);
+            Complete(window.OpenDocumentsAsync([mixedPdf,xml]));var generic=window.ActiveDocument!;
+            check(!generic.IsPdf&&generic.Ready&&((FrameworkElement)window.FindName("GenericState")).Visibility==Visibility.Visible&&((FrameworkElement)window.FindName("SignatureCard")).Visibility==Visibility.Collapsed,"Un archivo general exige recuadro o se presenta como un PDF.");
+            check(LaunchDocument.ParseMany(["--open",xml]).Single()==xml&&MainWindow.DroppedFilePaths([xml,folder]).SequenceEqual(new[]{xml}),"Los archivos generales no se abren por argumentos o arrastre.");
+            var mixed=window.Documents.Single(d=>d.IsPdf);Complete(window.SelectDocumentAsync(mixed));mixed.SetSelection([.12,.55,.4,.1]);Complete(window.SelectDocumentAsync(generic));
+            Capture(window,Path.Combine(root,"windows-general-file.png"),1600,1000);
+            Complete(window.SignAllAsync());
+            check(generic.SignedOutput==xml+".p7s"&&DetachedSignature.Verify(xml,generic.SignedOutput).Count==1&&PdfEngine.Verify(mixed.SignedOutput!).Count==1,"El botón Firmar no procesa un lote mixto sin pedir recuadro al XML.");
+            Complete(window.OpenDocumentAsync(generic.SignedOutput!));var detached=window.ActiveDocument!;
+            check(detached.IsSignatureFile&&!detached.Ready&&((Button)window.FindName("VerifyButton")).Visibility==Visibility.Visible,"Abrir un .p7s no permite comprobarlo o lo prepara como un original para firmar.");
+            Complete(window.CloseDocumentAsync(detached));Complete(window.CloseDocumentAsync(generic));Complete(window.CloseDocumentAsync(mixed));
         }
         finally{window.Close();SynchronizationContext.SetSynchronizationContext(previous);}
         var received=new TaskCompletionSource<string[]>(TaskCreationOptions.RunContinuationsAsynchronously);

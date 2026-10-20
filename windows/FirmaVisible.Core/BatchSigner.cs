@@ -2,24 +2,25 @@ using iText.Signatures;
 
 namespace FirmaVisible.Core;
 
-public sealed record SigningJob(string Source, string Destination, Placement Placement, SignatureDesign Design);
+public sealed record SigningJob(string Source, string Destination, Placement? Placement, SignatureDesign Design);
 public sealed record SignedDocument(SigningJob Job, Verification Verification);
 public sealed class BatchSigningException(string message, IReadOnlyList<SignedDocument> completed, Exception inner) : IOException(message, inner)
 { public IReadOnlyList<SignedDocument> Completed { get; } = completed; }
 
 public static class BatchSigner
 {
-    public static string OutputPath(string original) => Path.Combine(Path.GetDirectoryName(Path.GetFullPath(original))!, Path.GetFileNameWithoutExtension(original) + "_firmado.pdf");
+    public static bool IsPdf(string path)=>string.Equals(Path.GetExtension(path),".pdf",StringComparison.OrdinalIgnoreCase);
+    public static string OutputPath(string original) => IsPdf(original)?Path.Combine(Path.GetDirectoryName(Path.GetFullPath(original))!, Path.GetFileNameWithoutExtension(original) + "_firmado.pdf"):Path.GetFullPath(original)+".p7s";
     public static void CheckDestinations(IReadOnlyList<SigningJob> jobs)
     {
-        if (jobs.Count == 0) throw new ArgumentException("No hay PDF pendientes para firmar.");
+        if (jobs.Count == 0) throw new ArgumentException("No hay archivos pendientes para firmar.");
         var sources = jobs.Select(j => Path.GetFullPath(j.Source)).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var destinations = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var job in jobs)
         {
             string path = Path.GetFullPath(job.Destination);
             if (sources.Contains(path)) throw new IOException("El destino coincide con un original. Se conservarán todos los originales.");
-            if (!destinations.Add(path)) throw new IOException("Dos PDF tienen el mismo destino. Abre cada original una sola vez.");
+            if (!destinations.Add(path)) throw new IOException("Dos archivos tienen el mismo destino. Abre cada original una sola vez.");
             if (File.Exists(path) || Directory.Exists(path)) throw new IOException($"Ya existe {path}. Mueve o renombra esa copia antes de firmar. No se ha iniciado el lote.");
             if (!Directory.Exists(Path.GetDirectoryName(path))) throw new DirectoryNotFoundException("No existe la carpeta de destino: " + path);
         }
@@ -38,8 +39,10 @@ public static class BatchSigner
                 try
                 {
                     progress?.Invoke(index+1,jobs.Count);
-                    PdfEngine.Sign(job.Source,temp,job.Placement,identity,job.Design,tsa);
-                    staged.Add((temp,new(job,PdfEngine.Verify(temp))));
+                    Verification verification;
+                    if(IsPdf(job.Source)) { PdfEngine.Sign(job.Source,temp,job.Placement??throw new ArgumentException("Falta el recuadro del PDF."),identity,job.Design,tsa);verification=PdfEngine.Verify(temp); }
+                    else { DetachedSignature.Sign(job.Source,temp,identity,tsa);verification=DetachedSignature.Verify(job.Source,temp); }
+                    staged.Add((temp,new(job,verification)));
                 }
                 catch { if(File.Exists(temp)) File.Delete(temp); throw; }
             }
@@ -50,7 +53,7 @@ public static class BatchSigner
         }
         catch(Exception ex)
         {
-            throw new BatchSigningException(completed.Count == 0 ? $"No se han guardado copias del lote. {ex.Message}" : $"Se guardaron {completed.Count} copias; el resto no se guardó. {ex.Message}",completed.ToArray(),ex);
+            throw new BatchSigningException(completed.Count == 0 ? $"No se han guardado firmas del lote. {ex.Message}" : $"Se guardaron {completed.Count} firmas; el resto no se guardó. {ex.Message}",completed.ToArray(),ex);
         }
         finally { foreach(var item in staged) if(File.Exists(item.Path)) File.Delete(item.Path); }
     }

@@ -2,12 +2,12 @@
 
 ## Archivos e identidad
 
-- Archivo de entrega actual: `artifacts/store/FirmaPDF-1.0.1.0.msix` (sustituye a la preparación `1.0.0.0`).
+- Archivo de entrega actual: `artifacts/store/FirmaPDF-1.1.0.0.msix` (sustituye a las preparaciones `1.0.x.0`).
 - Identidad: `EduardoCallejo.FirmaPDF`.
 - Publisher: `CN=D317ECBE-86A1-4610-9063-9C16F1256EC9`.
 - Nombre público del editor: `Eduardo Callejo`.
 - Arquitectura: x64. Windows 10, compilación 19041, o posterior; Windows 11.
-- Versión actual del paquete Store: `1.0.1.0`. La compilación interna de la aplicación continúa en la rama de desarrollo `0.4.0`.
+- Versión actual del paquete Store: `1.1.0.0`. La aplicación incluida es la versión `0.5.0`.
 
 El paquete de subida no tiene firma de editor. Se envía a Partner Center, no se instala haciendo doble clic. Microsoft lo firma después de superar su certificación. La copia local de desarrollo y el ZIP de GitHub no adquieren esa firma por disponer de esta identidad.
 
@@ -28,7 +28,9 @@ FirmaPDF permite firmar PDF en tu ordenador con un certificado digital y colocar
 
 Personaliza varios diseños con texto e imagen, utiliza un fondo transparente y ajusta automáticamente el texto al espacio disponible. Puedes usar certificados del almacén de Windows o abrir un archivo .p12/.pfx compatible. Incluye un sello de tiempo opcional que requiere Internet.
 
-Los documentos y las claves se procesan localmente. Las copias se guardan junto al original con el sufijo _firmado, sin sobrescribir los originales ni archivos existentes. La comprobación integrada informa sobre la integridad criptográfica; no sustituye la validación de confianza y revocación del certificado ni certifica la cualificación de la firma.
+También puedes firmar Word, Excel, XML, imágenes, ZIP y otros archivos mediante una firma separada .p7s, conservando el original junto a la firma. Estos archivos no requieren recuadro y pueden incluirse en el mismo lote que los PDF. No es firma nativa de Office ni XAdES/FacturaE.
+
+Los documentos y las claves se procesan localmente. Los PDF se guardan junto al original con el sufijo _firmado, sin sobrescribir archivos. Los botones de comprobación verifican la integridad y consultan la confianza y revocación de los certificados mediante Windows, distinguiendo estado aceptado, revocado o desconocido. No certifican cualificación ni validación histórica.
 
 Aplicación de código abierto bajo AGPL-3.0-or-later. Consulta el código fuente y las licencias desde Configuración.
 
@@ -46,7 +48,7 @@ Fuentes: [precios MSIX](https://learn.microsoft.com/en-us/windows/apps/publish/p
 
 FirmaPDF is a self-contained .NET/WPF desktop application for signing local PDF files. Full trust is required to access files explicitly selected by the user, render PDFs with Windows APIs, use Windows certificate-store private keys through cryptographic providers, and produce incremental digital PDF signatures. It does not request administrator privileges, install drivers, export the user's Windows private keys, or modify security settings. The packaged version declares its PDF file association in the manifest instead of writing a portable executable path to the shell registry.
 
-Reviewers can open a non-sensitive PDF, select a test certificate with a private key from the current-user Windows certificate store or a test .pfx file, draw a signature rectangle, and click Firmar. Disable Sello de tiempo in Settings to test without a network connection. If enabled, the optional DigiCert timestamp service receives a hash of the signature value and a nonce, not the PDF or the user's certificate/private key. No developer account or login is required inside FirmaPDF. Use synthetic certificates for testing, not a customer's private identity.
+Reviewers can open a non-sensitive PDF, select a test certificate with a private key from the current-user Windows certificate store or a test .pfx file, draw a signature rectangle, and click Firmar. Other files up to 100 MiB produce a detached CMS/CAdES .p7s signature without changing the original. Disable Sello de tiempo in Settings to sign without a network connection. If enabled, the optional DigiCert timestamp service receives a hash of the signature value and a nonce, not the document or the user's private key. Explicit certificate/signature validation buttons invoke Windows chain building and online CRL/OCSP checks; issuer requests may contain public certificate data. Unavailable revocation information is reported as unknown. No developer account or login is required inside FirmaPDF. Use synthetic certificates for testing, not a customer's private identity.
 
 ## Validación y límites de esta entrega
 
