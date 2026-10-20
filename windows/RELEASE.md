@@ -1,3 +1,14 @@
+FirmaPDF Windows 0.4.0: pestañas, firmas guardadas y firma de todos los PDF en un paso.
+
+- Rueda de configuración junto al título. Allí se gestionan las firmas de texto e imagen, las opciones de firma, el sello, el menú del botón derecho y las licencias.
+- Varios diseños con nombre (hasta 20), con selección independiente por PDF en «03 Tu firma visible». La firma anterior se conserva como «Mi firma».
+- Botón azul «Poner firma». También puedes dibujar directamente sobre el PDF: cada pestaña recuerda su recuadro, página y diseño.
+- Apertura de varios PDF desde el selector o arrastrándolos a cualquier zona de la ventana. Un PDF ya abierto activa su pestaña. Los abiertos desde otra ejecución de esta misma copia llegan a la ventana existente.
+- «Firmar» procesa todos los pendientes, con una sola confirmación opcional y un solo aviso final. Se guardan junto al original como nombre_firmado.pdf, sin selector de destino.
+- Si falta un recuadro o existe una copia de destino, se avisa antes de empezar. Se verifican todas las firmas antes de publicar las copias; un fallo de firma o sello durante esa preparación descarta los temporales.
+- Si Windows impide publicar un archivo después de haber publicado otros, se conservan las copias ya guardadas y se informa de cuáles terminaron. Nunca se sobrescriben archivos existentes.
+- Las pestañas ya firmadas se marcan con ✓ y se omiten al firmar nuevos documentos. Los originales siempre se conservan.
+
 FirmaPDF Windows 0.3.4: ventana maximizada, último certificado y avisos configurables.
 
 - Corregidos los límites de ventana que dejaban espacio negro al maximizar. Windows gestiona el tamaño de la ventana maximizada.

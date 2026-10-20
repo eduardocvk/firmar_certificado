@@ -38,7 +38,8 @@ internal static class PreferencesFeatures
         {
             Complete(window.RestoreLastIdentityAsync());
             check(lookedUp==fingerprint && ((ComboBox)window.FindName("CertificateCombo")).SelectedItem is CertificateIdentity selected && selected.Fingerprint==fingerprint,"No se preselecciona el último certificado utilizado.");
-            check(((CheckBox)window.FindName("ConfirmBeforeCheck")).IsChecked==false && ((CheckBox)window.FindName("SuccessDialogCheck")).IsChecked==false,"No se restauran las opciones de diálogos.");
+            var settings=new SettingsWindow(store.Load());
+            check(((CheckBox)settings.FindName("ConfirmBeforeCheck")).IsChecked==false && ((CheckBox)settings.FindName("SuccessDialogCheck")).IsChecked==false,"No se restauran las opciones de diálogos en configuración.");settings.Close();
             Complete(window.OpenDocumentAsync(Path.Combine(root,"original-0.pdf")));
             string output=Path.Combine(root,"signed-without-dialogs.pdf"); if(File.Exists(output)) File.Delete(output);
             Complete(window.SignDocumentAsync(output,new(0,.15,.55,.5,.15)));

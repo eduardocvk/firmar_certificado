@@ -25,7 +25,7 @@ public sealed class ExplorerIntegration(RegistryKey classes)
         {
             key.SetValue(null, "Firmar con FirmaPDF");
             key.SetValue("Icon", $"\"{executable}\",0");
-            key.SetValue("MultiSelectModel", "Single");
+            key.SetValue("MultiSelectModel", "Document");
             using var command = key.CreateSubKey("command"); command.SetValue(null, Command(executable));
         }
         NotifyExplorer();

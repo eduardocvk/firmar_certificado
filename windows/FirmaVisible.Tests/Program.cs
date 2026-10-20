@@ -167,6 +167,7 @@ internal static class Program
         }
         Refuses(() => PdfEngine.Sign(locked,rejected,new(0,.1,.6,.5,.1),rsa),"Se modificó un documento certificado.");
         await CustomFeatures.RunAsync(root, rsa, Check, Refuses);
+        BatchFeatures.Run(root,rsa,Check,Refuses);
     }
 
     private static void SaveImage(BitmapSource image,string path)
@@ -190,5 +191,6 @@ internal static class Program
         Check(true,"Editor WPF renderizado.");
         ExplorerFeatures.Run(root, Check, Refuses);
         PreferencesFeatures.Run(root, Check);
+        WorkspaceFeatures.Run(root,Check,Refuses);
     }
 }

@@ -1,38 +1,28 @@
-FirmaPDF para Windows 0.3 - C#/.NET y WPF
+FirmaPDF para Windows 0.4 - C#/.NET y WPF
 
-Conserva toda esta carpeta y ejecuta FirmaPDF.exe. No necesita Java ni instalar .NET.
-La descarga de GitHub no tiene firma de editor y SmartScreen puede bloquearla.
-Cambiar de Java a C# no elimina ese aviso. No se modifica la seguridad de Windows.
-La distribución MSIX desde Microsoft Store está preparada, pendiente de identidad y aprobación.
-Instrucciones: https://github.com/eduardocvk/firmar_certificado/blob/main/windows/DISTRIBUCION.md
+Conserva toda la carpeta y abre FirmaPDF.exe. No necesita Java ni instalar .NET.
 
-MENÚ DEL BOTÓN DERECHO
-Abre FirmaPDF y pulsa «Menú del botón derecho…» → «Activar menú».
-Después: botón derecho en un PDF → «Firmar con FirmaPDF».
-En Windows 11: «Mostrar más opciones» → «Firmar con FirmaPDF».
-No requiere administrador ni cambia tu lector habitual. Puedes quitarlo desde la misma ventana.
-Si mueves la carpeta, activa el menú de nuevo desde la nueva ubicación.
+1. Abre varios PDF o arrástralos a la ventana. Cada uno se abre en una pestaña.
+2. Elige el certificado. Se preselecciona el último usado si sigue disponible en Windows.
+3. La rueda junto al título abre Configuración: varias firmas personalizadas, opciones, sello de tiempo, menú del botón derecho y licencias.
+4. Elige un diseño en «03 Tu firma visible» y dibuja su recuadro; también puedes pulsar «Poner firma».
+5. Cada pestaña recuerda página, recuadro y diseño. Pon un recuadro en cada PDF.
+6. «Firmar» procesa todos los pendientes y guarda nombre_firmado.pdf junto a cada original. No sobrescribe archivos. Si un destino ya existe, muévelo o renómbralo antes.
+7. Abre la copia firmada y revisa el panel de firmas en tu visor habitual.
 
-1. Abre el PDF. Se trabaja con una copia temporal.
-2. Elige un certificado de Windows o abre tu .p12/.pfx con contraseña.
-3. Personaliza el texto y la imagen. Variables: {nombre}, {fecha}, {emisor}.
-   El diseño se guarda en tu perfil de Windows, sin certificado ni contraseña.
-4. Activa o desactiva Sello de tiempo. Con él, solo se envía una huella de la firma a DigiCert.
-   Requiere Internet. Si falla, no se guarda una copia sin el sello solicitado.
-5. Coloca el recuadro y ajusta página, posición y tamaño. Firma y guarda con nombre nuevo.
-6. Abre la copia en Adobe Reader y revisa su panel de firmas.
+Los originales no se modifican. El diseño anterior se migra como «Mi firma».
+Puedes crear hasta 20 firmas de texto e imagen, con fondo transparente, marco opcional y texto de 4 a 18 puntos.
+Los PDF abiertos desde otra ejecución de esta misma copia llegan a la ventana existente.
 
-ÚLTIMO CERTIFICADO Y AVISOS
-Se preselecciona el último certificado usado si está instalado y vigente en Windows.
-Solo se guarda su huella. Los .p12/.pfx no instalados requieren abrirlos con contraseña.
-En Opciones de firma puedes quitar la confirmación previa y el aviso de éxito.
-También hay una casilla para no volver a mostrar en los propios avisos.
-El resultado sigue visible en la ventana. Los errores se muestran y el destino se sigue eligiendo.
+Para activar el botón derecho: Configuración → Menú del botón derecho → Activar menú.
+En Windows 11 aparece en Mostrar más opciones. Conserva esta carpeta; si la mueves, vuelve a activarlo.
 
-La fecha visible procede del ordenador. La hora acreditada por el sello aparece en la confirmación y en el PDF.
-Se comprueba integridad criptográfica; no se comprueban confianza del firmante, revocación ni cualificación.
-Sin evidencias LT/LTA ni declaración de firma/sello cualificado. Usa primero un PDF de prueba.
-No subas certificados, claves o contraseñas a GitHub.
+El sello de tiempo es opcional. Solo se envía una huella de cada firma a DigiCert, nunca el PDF ni la clave.
+Un fallo durante la firma o el sellado descarta las copias temporales del lote. Si Windows impide guardar una copia después de guardar otras, se informa de los resultados parciales y se conservan los ya guardados.
+La fecha visible es la del equipo. El sello acreditado se consulta en el panel de firmas.
+Se verifica integridad, sin afirmar confianza del firmante, revocación, cualificación ni evidencias LT/LTA.
+No se guardan contraseñas ni claves. Los .p12/.pfx no instalados en Windows deben abrirse con contraseña.
 
-Código Windows bajo AGPL-3.0-or-later. Conserva LICENSE.txt, ITEXT-LICENSE.md, THIRD_PARTY.txt y licenses/.
-Fuente: https://github.com/eduardocvk/firmar_certificado
+La descarga de GitHub sigue sin firma de editor: SmartScreen puede bloquearla. No se modifica la seguridad de Windows.
+Windows usa iText Community y se distribuye bajo AGPL-3.0-or-later. Conserva las licencias incluidas.
+Código fuente: https://github.com/eduardocvk/firmar_certificado

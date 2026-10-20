@@ -2,7 +2,7 @@ param(
     [Parameter(Mandatory)][string]$IdentityName,
     [Parameter(Mandatory)][string]$Publisher,
     [Parameter(Mandatory)][string]$PublisherDisplayName,
-    [string]$Version = '0.3.4.0',
+    [string]$Version = '0.4.0.0',
     [string]$PublishDirectory,
     [string]$OutputDirectory
 )

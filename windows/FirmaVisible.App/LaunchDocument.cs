@@ -4,6 +4,13 @@ namespace FirmaVisible.App;
 
 public static class LaunchDocument
 {
+    public static string[] ParseMany(string[] args)
+    {
+        var paths=args.Length>0&&args[0]=="--open"?args.Skip(1).ToArray():args;
+        if(args.Length>0&&paths.Length==0)throw new ArgumentException("Indica uno o varios archivos PDF.");
+        if(paths.Length>1000)throw new ArgumentException("Abre hasta 1000 PDF cada vez.");
+        return paths.Select(Validate).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+    }
     public static string? Parse(string[] args)
     {
         if (args.Length == 0) return null;

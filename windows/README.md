@@ -16,29 +16,29 @@ Ejecutable local: `artifacts/windows/FirmaPDF/FirmaPDF.exe`. La carpeta contiene
 
 La suite usa identidades efímeras autofirmadas «NO REAL», comprueba RSA y EC, CMS con `SignedCms` de .NET, las cuatro rotaciones con CropBox desplazado, original intacto, segunda firma incremental, certificado caducado, contraseña incorrecta, alteración y revisiones posteriores. El visor nativo de Windows renderiza cada resultado y se comprueba la ubicación visible. También genera una captura de la interfaz WPF sin abrir una ventana interactiva.
 
+## Configuración y firmas guardadas
+
+La rueda junto al título abre **Configuración**. Permite crear hasta 20 diseños, personalizar texto e imagen, renombrarlos o eliminarlos. El diseño anterior se migra como «Mi firma». Las preferencias conservan el certificado recordado y los avisos. También se incluyen el sello, la integración de Explorer y el acceso al código y licencias.
+
+En **03 Tu firma visible** se elige un diseño por documento. **Poner firma** crea un recuadro inicial; también se puede dibujar directamente. Cambiar de página o pestaña conserva el recuadro de la página elegida.
+
+## Pestañas y firma por lotes
+
+El selector permite varios PDF y la ventana acepta archivos arrastrados desde Explorer. Los duplicados se detectan por ruta completa sin distinguir mayúsculas. Se puede cerrar cada pestaña sin afectar a las demás. Las aperturas de la misma copia de la aplicación se transmiten a la ventana existente mediante una tubería local restringida al usuario de Windows.
+
+**Firmar** procesa todos los pendientes. Se requiere un recuadro de al menos 100 × 42 puntos por documento. Se usa el mismo certificado y sello elegido, con un diseño y posición independientes por PDF. El destino automático es `nombre_firmado.pdf` en la carpeta del original. No se sobrescribe ningún archivo y se mantienen los originales.
+
+Antes de iniciar se comprueban recuadros y colisiones. El motor firma y verifica todos los documentos en temporales de sus carpetas de destino; un fallo en esa preparación elimina esos temporales sin publicar copias. Al publicar se utiliza movimiento sin reemplazo. Si aparece un conflicto durante la publicación, se informa de las copias ya guardadas y se conservan; las restantes no se publican. No se afirma atomicidad de varias carpetas frente a cambios externos o errores de disco.
+
 ## Abrir desde el botón derecho
 
-En la versión portable, abre FirmaPDF y pulsa **Menú del botón derecho… → Activar menú**. Después, botón derecho sobre un PDF → **Firmar con FirmaPDF**. En Windows 11 está en **Mostrar más opciones**. Se abre el documento para seleccionar certificado y recuadro; no se firma automáticamente.
-
-La opción se registra solo para el usuario actual, sin administrador y sin cambiar el lector predeterminado. Se puede quitar desde esa misma ventana. Conserva la carpeta: si cambia de ubicación, vuelve a activar el menú desde la nueva copia. Los comandos `FirmaPDF.exe --register-context-menu` y `FirmaPDF.exe --unregister-context-menu` permiten hacer lo mismo. También se admite `FirmaPDF.exe --open "C:\ruta\documento.pdf"` o una sola ruta PDF como argumento.
-
-La futura distribución por Store requiere declarar su asociación de archivos en el paquete; este registro está pensado para el ZIP portable.
-
-## Operaciones
-
-1. Abrir PDF: la vista previa y la firma utilizan una copia local del mismo documento.
-2. Elegir certificado del almacén personal de Windows o abrir PKCS#12 con contraseña. La importación utiliza `EphemeralKeySet` y dura la sesión.
-3. Personalizar texto e imagen con fondo transparente, marco opcional y texto de 4 a 18 pt, incluyendo `{nombre}`, `{fecha}` y `{emisor}`. El diseño se conserva en `%LOCALAPPDATA%\FirmaVisible\settings.json` junto con la preferencia de sello, sin certificado ni contraseña.
-4. Activar o desactivar el sello de tiempo. Elegir página y dibujar, mover o redimensionar el recuadro. Ajustar zoom si hace falta.
-5. Confirmar identidad y uso del sello; guardar una copia con nombre nuevo. **Abrir última copia firmada** utiliza el visor configurado en Windows.
-
-El código no exporta las claves del almacén para firmar. Las consultas de cadena que se usan para incorporar certificados públicos desactivan descargas y revocación, por lo que **no se presentan como validación de confianza**. La copia especial para renderizar formularios se aplana exclusivamente para visualización: nunca se firma, comprueba ni exporta.
+En **Configuración → Menú del botón derecho… → Activar menú** se registra «Firmar con FirmaPDF» para los PDF del usuario actual, sin administrador ni cambio del lector habitual. En Windows 11 está en «Mostrar más opciones». Se puede retirar desde esa misma ventana. Si cambia la ubicación de la carpeta, actívalo desde la nueva copia. Los comandos `--register-context-menu` y `--unregister-context-menu` siguen disponibles, y `--open` admite varias rutas PDF. La futura distribución por Store requiere su asociación de archivos en el paquete; el registro actual corresponde al ZIP portable.
 
 ## Certificado recordado y avisos
 
 Tras una firma correcta se guarda únicamente la huella SHA-256 del certificado. Al iniciar, se recupera del almacén de Windows si conserva clave privada, está vigente y permite firmar. Si falta, no se sustituye por otro; selecciona uno manualmente. Para un .p12/.pfx que no está en el almacén, sigue siendo necesario abrir el archivo con su contraseña. **Olvidar** elimina la referencia recordada.
 
-En **Opciones de firma** puedes desmarcar **Confirmar antes de firmar** y **Mostrar aviso al terminar**, o usar las casillas «No volver a mostrar» de los propios diálogos. Las opciones son independientes y se guardan. El resultado, el archivo y su hora permanecen visibles en la ventana; los errores siguen mostrándose. Se mantiene el selector de destino para evitar sobrescribir el original.
+En **Configuración → Opciones de firma** puedes desmarcar **Confirmar antes de firmar** y **Mostrar aviso al terminar**, o usar las casillas «No volver a mostrar» de los propios diálogos. Las opciones son independientes y se guardan. El resultado, el archivo y su hora permanecen visibles en la ventana; los errores siguen mostrándose. El destino automático usa el sufijo _firmado y nunca reemplaza archivos existentes.
 
 ## Firma y límites
 
@@ -55,3 +55,5 @@ La firma de los PDF y la identidad del editor del ejecutable son independientes.
 El código y la aplicación de `windows/` se ofrecen bajo **AGPL-3.0-or-later**, al integrar iText Community. Fuente completa y licencia incluidas; se conservan Producer y avisos de iText en la salida. Consulta `LICENSE.txt`, `ITEXT-LICENSE.md`, `THIRD_PARTY.txt` y `licenses/`. Los componentes Java/Android del repositorio son independientes y conservan Apache-2.0.
 
 Para probar el sello real con una identidad sintética, define FIRMAVISIBLE_LIVE_TSA=true antes de ejecutar las pruebas y después ejecuta scripts/verify-timestamp.ps1 -Artifacts artifacts/windows-tests. No se comprueba la revocación. El CI ejecuta esta comprobación y OpenSSL exige que se rechace una alteración.
+
+La selección múltiple del menú de Explorer utiliza el modelo Document y sus límites de Windows. Para lotes mayores, usa el selector múltiple o arrastra los PDF a la ventana. Referencia: https://learn.microsoft.com/en-us/windows/win32/shell/context-menu-handlers#employing-the-verb-selection-model

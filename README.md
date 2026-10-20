@@ -2,7 +2,7 @@
 
 Aplicaciones locales para **Windows 10/11 x64** y **Android 8 o posterior** que firman PDF con certificado digital y permiten elegir la posición de su apariencia visible.
 
-**Windows 0.3.4 en C#/.NET; Android 0.2.2. Versiones de pruebas.** Implementa firma con certificado y comprobación criptográfica, no una certificación jurídica del documento. El usuario confirmó que Android firma correctamente con su certificado en la versión anterior; las nuevas funciones y la versión Windows necesitan su comprobación manual con FNMT. Conviene empezar con un PDF de prueba y comprobar el resultado en Adobe Reader y en el sistema al que se enviará.
+**Windows 0.4.0 en C#/.NET; Android 0.2.2. Versiones de pruebas.** Implementa firma con certificado y comprobación criptográfica, no una certificación jurídica del documento. El usuario confirmó que Android firma correctamente con su certificado en la versión anterior; las nuevas funciones y la versión Windows necesitan su comprobación manual con FNMT. Conviene empezar con un PDF de prueba y comprobar el resultado en Adobe Reader y en el sistema al que se enviará.
 
 El nombre anterior era FirmaVisible. Se mantienen el identificador Android y la carpeta de preferencias Windows para conservar los diseños guardados. Los paquetes de versiones anteriores conservan sus nombres originales.
 
@@ -23,15 +23,14 @@ Los artefactos de Actions requieren iniciar sesión en GitHub y caducan según s
 
 ### Windows
 
-1. Abre el PDF. La aplicación trabaja sobre una copia temporal del archivo abierto.
-2. Pulsa **Certificados de Windows** para usar un certificado instalado con su clave privada, o **Importar .p12 / .pfx** para abrir una copia protegida con contraseña. Un archivo `.cer` sin clave privada no sirve para firmar.
-3. Selecciona la página. Arrastra sobre ella para crear el recuadro; arrastra su interior para moverlo y su esquina inferior derecha para cambiar su tamaño.
-4. Personaliza texto e imagen, ajusta el texto entre 4 y 18 pt, guarda tu diseño y activa o desactiva **Sello de tiempo**. El diseño y esa preferencia permanecen en el perfil de Windows, sin certificado ni contraseña.
-5. En **Opciones de firma** puedes desactivar la confirmación y el aviso de éxito. La última identidad utilizada se preselecciona al iniciar si está instalada y disponible en Windows; **Olvidar** elimina ese recuerdo.
-6. Pulsa **Firmar y guardar copia**, elige un nombre nuevo y autoriza la identidad y el sello.
-7. Abre la copia firmada en Adobe Reader y consulta el panel de firmas.
+1. Abre uno o varios PDF con **Abrir PDF…**, o arrástralos a cualquier zona de la ventana. Se abren en pestañas; los duplicados activan la pestaña existente.
+2. Elige un certificado de Windows o abre tu `.p12/.pfx`. La última identidad utilizada se recuerda por su huella y se preselecciona si está disponible en Windows.
+3. Pulsa la rueda junto a **FirmaPDF** para crear, personalizar o renombrar tus firmas de texto e imagen. Ahí están también las opciones, el sello de tiempo, el menú del botón derecho y las licencias.
+4. En **03 Tu firma visible**, elige un diseño para la pestaña actual. Dibuja el recuadro sobre el PDF o pulsa el botón azul **Poner firma**; ajusta su posición y tamaño. Cada pestaña conserva su página, recuadro y diseño.
+5. Pulsa **Firmar**. Se procesan todos los PDF pendientes, cada uno con su recuadro, y se guardan junto al original como `nombre_firmado.pdf`. No se sobrescriben el original ni las copias existentes. Si falta un recuadro o existe un destino, se avisa antes de iniciar el lote.
+6. Las pestañas terminadas se marcan con ✓; **Abrir copia firmada** abre el resultado de la pestaña actual. Revisa el panel de firmas en tu visor habitual.
 
-Para abrir un documento desde el Explorador: en FirmaPDF pulsa **Menú del botón derecho… → Activar menú** una vez. Después utiliza **botón derecho en el PDF → Firmar con FirmaPDF**; en Windows 11, dentro de **Mostrar más opciones**. No cambia tu lector habitual; puedes quitar el menú desde la misma ventana.
+En **Configuración → Menú del botón derecho… → Activar menú** puedes añadir **Firmar con FirmaPDF** a los PDF. En Windows 11 está en **Mostrar más opciones**. Los abiertos desde otra ejecución de la misma copia se añaden a la ventana existente. No cambia tu lector habitual.
 
 ### Android
 

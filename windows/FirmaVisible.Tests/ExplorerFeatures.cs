@@ -40,6 +40,7 @@ internal static class ExplorerFeatures
             var integration=new ExplorerIntegration(registry);
             integration.Register(executable);
             check(integration.IsRegisteredFor(executable),"El menú no se registra para el ejecutable elegido.");
+            using(var verb=registry.OpenSubKey(@"Software\Classes\"+ExplorerIntegration.VerbPath)) check((string?)verb?.GetValue("MultiSelectModel")=="Document","El menú sigue restringido a un único PDF seleccionado.");
             integration.Register(executable);
             using(var command=registry.OpenSubKey(@"Software\Classes\"+ExplorerIntegration.VerbPath+@"\command"))
                 check((string?)command?.GetValue(null)==$"\"{executable}\" --open \"%1\"","La orden no protege las rutas con espacios.");
