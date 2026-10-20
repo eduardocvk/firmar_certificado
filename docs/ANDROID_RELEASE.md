@@ -1,4 +1,14 @@
-FirmaPDF Android 0.2.2: fondo transparente y tamaño del texto configurable.
+FirmaPDF Android 0.3.0: varios estilos de firma y configuración.
+
+- Hasta 20 estilos independientes con nombre, texto, imagen, marco y tamaño de letra. Crear, editar, duplicar, renombrar y eliminar desde Configuración. Se conserva el último elegido.
+- Migración de la apariencia anterior a «Mi firma», sin borrar el diseño anterior. Escritura atómica del índice y almacenamiento privado de imágenes; nunca incluye certificados ni contraseñas.
+- Pantalla principal con documento, certificado, selector de estilo, vista previa, botón pequeño Poner firma y botón Firmar.
+- Configuración junto al título: estilos, sello de tiempo, confirmación previa opcional, aviso de guardado opcional, comprobación criptográfica, datos del certificado, guardar/compartir última firma, privacidad, código fuente y licencias.
+- Por defecto, al pulsar Firmar se genera y comprueba la copia y solo se muestra el resultado con Guardar como / Compartir / Cerrar. Guardar abre el selector de Android y no añade un aviso final.
+- Se mantiene la firma PDF con certificado y sello opcional; no añade firmas de otros formatos ni comprobación de confianza/revocación a Android.
+- Pruebas de persistencia de varios estilos, migración, aislamiento de imágenes, límites, interfaz vertical/horizontal, editor y firma con identidad sintética sin confirmación previa. La instrumentación se ejecuta en el emulador de CI antes de publicar el APK.
+
+Android 0.2.2: fondo transparente y tamaño del texto configurable.
 
 - Texto de 4 a 18 pt, con vista previa y guardado; 8 pt por defecto y reducción para caber.
 - Imagen con más espacio: la mitad del ancho útil cuando hay texto.

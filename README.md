@@ -2,7 +2,7 @@
 
 Aplicaciones locales para **Windows 10/11 x64** y **Android 8 o posterior** que firman PDF con certificado digital y permiten elegir la posición de su apariencia visible.
 
-**Windows 0.5.0 en C#/.NET; Android 0.2.2. Versiones de pruebas.** Implementa firma con certificado y comprobación criptográfica, no una certificación jurídica del documento. El usuario confirmó que Android firma correctamente con su certificado en la versión anterior; las nuevas funciones y la versión Windows necesitan su comprobación manual con FNMT. Conviene empezar con un PDF de prueba y comprobar el resultado en Adobe Reader y en el sistema al que se enviará.
+**Windows 0.5.0 en C#/.NET; Android 0.3.0. Versiones de pruebas.** Implementa firma con certificado y comprobación criptográfica, no una certificación jurídica del documento. El usuario confirmó que Android firma correctamente con su certificado en la versión anterior; las nuevas funciones y la versión Windows necesitan su comprobación manual con FNMT. Conviene empezar con un PDF de prueba y comprobar el resultado en Adobe Reader y en el sistema al que se enviará.
 
 El nombre anterior era FirmaVisible. Se mantienen el identificador Android y la carpeta de preferencias Windows para conservar los diseños guardados. Los paquetes de versiones anteriores conservan sus nombres originales.
 
@@ -36,11 +36,11 @@ En **Configuración → Menú del botón derecho… → Activar menú** puedes a
 
 1. Abre un PDF desde la aplicación, o utiliza **Compartir / Abrir con → FirmaPDF** desde otra aplicación.
 2. En **Certificado**, elige una identidad del almacén de Android o abre tu `.p12/.pfx` con su contraseña. La importación directa solo dura la sesión; no guarda el certificado en disco. Si ya tienes instalado el certificado utilizado por AutoFirma, comprueba si aparece en el selector de Android. Si no aparece, puedes abrir tu copia `.p12/.pfx`.
-3. Pulsa **Personalizar firma** para guardar texto e imagen. Usa `{nombre}`, `{fecha}` y `{emisor}` para completarlos con el certificado elegido. Elige PNG/JPEG, ajusta el texto entre 4 y 18 pt y utiliza fondo transparente con marco opcional. El diseño se conserva en este móvil.
-4. Activa **Sello de tiempo** para solicitar RFC3161 a DigiCert (requiere Internet); desactívalo para firmar sin conexión. Solo se envía una huella de la firma. Si el servicio falla, no se guarda una firma sin el sello solicitado.
+3. En **Configuración ⚙ → Firmas personalizadas**, crea, edita, duplica, renombra o elimina hasta 20 estilos con texto e imagen PNG/JPEG. Usa `{nombre}`, `{fecha}` y `{emisor}`, ajusta el texto entre 4 y 18 pt y utiliza fondo transparente con marco opcional. El diseño anterior se migra como «Mi firma». Elige el estilo desde la pantalla principal; se recuerda el último seleccionado.
+4. En **Configuración**, activa **Sello de tiempo** para solicitar RFC3161 a DigiCert (requiere Internet); desactívalo para firmar sin conexión. Solo se envía una huella de la firma. Si el servicio falla, no se guarda una firma sin el sello solicitado. Aquí están también las opciones de diálogos, comprobación criptográfica, datos del certificado, recuperación de la última copia, privacidad, código fuente y licencias.
 5. Elige la página y dibuja el recuadro. Puedes moverlo, ajustar su esquina, ampliar con un pellizco y desplazar con dos dedos. **Ajustar** restablece el zoom.
-6. Pulsa **Firmar y guardar copia** y confirma la identidad y el uso del sello.
-7. Guarda el archivo con el selector de Android o compártelo. El menú **•••** permite guardar o compartir el último resultado y comprobar el PDF abierto.
+6. Pulsa **Firmar**. Por defecto no se pide confirmación previa; puedes activarla en Configuración.
+7. Al terminar de firmar aparece el diálogo de resultado: **Guardar como…**, **Compartir** o **Cerrar**. Guardar abre el selector de destino de Android. Por defecto no aparece otro aviso después del guardado; se puede activar en Configuración. Los errores y las autorizaciones propias de Android se siguen mostrando cuando hacen falta.
 
 La firma tiene fondo transparente; el marco es opcional y la imagen ocupa la mitad del ancho útil cuando hay texto. El tamaño del texto se guarda con el diseño (8 pt por defecto); se reduce si hace falta para caber. Un fondo blanco que forme parte de la imagen no se elimina: utiliza PNG con transparencia.
 
